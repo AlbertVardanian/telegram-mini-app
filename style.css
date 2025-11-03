@@ -366,63 +366,24 @@ p {
     color: #666;
 }
 
-.export-buttons {
-    display: flex;
-    gap: 10px;
-    margin: 15px 0;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
 .excel-btn {
     background: #217346;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    margin: 10px auto;
+    width: 100%;
+    justify-content: center;
 }
 
 .excel-btn:hover {
     background: #1a5c38;
-}
-
-.csv-btn {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.csv-btn:hover {
-    background: #219a52;
-}
-
-.json-btn {
-    background: #e67e22;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.json-btn:hover {
-    background: #d35400;
 }
 
 .export-section {
@@ -431,22 +392,5 @@ p {
     border-radius: 10px;
     margin: 20px 0;
     border-left: 4px solid #667eea;
-}
-
-.export-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.export-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.export-option input {
-    margin: 0;
+    text-align: center;
 }
