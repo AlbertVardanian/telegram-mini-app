@@ -630,4 +630,384 @@ function displayAdminStats(data, allData) {
 
 function loadAdminCharts() {
     try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '
+        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        const filteredData = selectedMarketplace === 'all' 
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
+
+        // Уничтожить предыдущие графики
+        currentCharts.forEach(chart => chart.destroy());
+        currentCharts = [];
+
+        displayAdminCharts(filteredData);
+    } catch (error) {
+        console.error('Error loading charts:', error);
+        document.getElementById('adminCharts').innerHTML = '<p class="error-message">Ошибка загрузки графиков</p>';
+    }
+}
+
+function displayAdminCharts(data) {
+    const marketplaceStats = getChartData(data, 'marketplace');
+    const categoryStats = getChartData(data, 'category').slice(0, 8);
+    const hourlyStats = getHourlyStats(data);
+
+    const chartsHTML = `
+        <div class="analytics-section">
+            <div class="section-title">📊 Распределение по маркетплейсам</div>
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <canvas id="marketplaceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <div class="section-title">📁 Топ категорий</div>
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <div class="section-title">🕒 Активность по часам</div>
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('adminCharts').innerHTML = chartsHTML;
+
+    // Создать графики
+    setTimeout(() => {
+        createPieChart('marketplaceChart', marketplaceStats, 'Маркетплейсы');
+        createBarChart('categoryChart', categoryStats, 'Категории');
+        createLineChart('hourlyChart', hourlyStats, 'Активность по часам');
+    }, 100);
+}
+
+function loadAdminTable() {
+    try {
+        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        const filteredData = selectedMarketplace === 'all' 
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
+
+        displayAdminTable(filteredData);
+    } catch (error) {
+        console.error('Error loading table:', error);
+        document.getElementById('adminTable').innerHTML = '<p class="error-message">Ошибка загрузки таблицы</p>';
+    }
+}
+
+function displayAdminTable(data) {
+    const tableHTML = `
+        <div class="analytics-section">
+            <div class="section-title">📋 Все выборы пользователей</div>
+            <p>Всего записей: ${data.length}</p>
+            
+            <input type="text" id="tableSearch" placeholder="Поиск по товарам..." class="table-search">
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Маркетплейс</th>
+                            <th>Категория</th>
+                            <th>Товар</th>
+                            <th>Время</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        ${data.map((item, index) => `
+                            <tr>
+                                <td>${item.marketplace}</td>
+                                <td>${item.category}</td>
+                                <td title="${item.product_query}">${item.product_query.length > 20 ? item.product_query.substring(0, 20) + '...' : item.product_query}</td>
+                                <td>${new Date(item.timestamp).toLocaleString('ru-RU')}</td>
+                                <td>
+                                    <button class="delete-btn" onclick="deleteProduct(${index})" title="Удалить">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <button class="export-btn" onclick="exportToCSV()">📥 Экспорт в CSV</button>
+        </div>
+    `;
+
+    document.getElementById('adminTable').innerHTML = tableHTML;
+
+    // Добавить поиск по таблице
+    document.getElementById('tableSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#tableBody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+}
+
+// Функция удаления товара
+function deleteProduct(index) {
+    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+        try {
+            const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+            const filteredData = selectedMarketplace === 'all' 
+                ? allData 
+                : allData.filter(item => item.marketplace === selectedMarketplace);
+            
+            // Найти полный индекс в общем массиве
+            const itemToDelete = filteredData[index];
+            const fullIndex = allData.findIndex(item => 
+                item.timestamp === itemToDelete.timestamp && 
+                item.product_query === itemToDelete.product_query
+            );
+            
+            if (fullIndex !== -1) {
+                allData.splice(fullIndex, 1);
+                localStorage.setItem('user_choices', JSON.stringify(allData));
+                
+                // Обновить все вкладки
+                loadAdminStats();
+                loadAdminCharts();
+                loadAdminTable();
+                
+                alert('✅ Товар удален');
+            }
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('❌ Ошибка при удалении товара');
+        }
+    }
+}
+
+// Функция экспорта в CSV
+function exportToCSV() {
+    try {
+        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        const filteredData = selectedMarketplace === 'all' 
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
+
+        const headers = ['Маркетплейс', 'Категория', 'Товар', 'Время', 'User ID'];
+        const csvContent = [
+            headers.join(','),
+            ...filteredData.map(item => [
+                `"${item.marketplace}"`,
+                `"${item.category}"`,
+                `"${item.product_query}"`,
+                `"${item.timestamp}"`,
+                `"${item.user_id}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `analytics_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('❌ Ошибка при экспорте данных');
+    }
+}
+
+// Вспомогательные функции для графиков
+function getChartData(data, field) {
+    const stats = {};
+    data.forEach(item => {
+        stats[item[field]] = (stats[item[field]] || 0) + 1;
+    });
+    
+    return Object.entries(stats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => ({ name, count }));
+}
+
+function getHourlyStats(data) {
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const stats = hours.reduce((acc, hour) => {
+        acc[hour] = 0;
+        return acc;
+    }, {});
+    
+    data.forEach(item => {
+        const hour = new Date(item.timestamp).getHours();
+        stats[hour]++;
+    });
+    
+    return hours.map(hour => ({
+        name: `${hour}:00`,
+        count: stats[hour]
+    }));
+}
+
+function createPieChart(canvasId, data, title) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: data.map(item => item.name),
+            datasets: [{
+                data: data.map(item => item.count),
+                backgroundColor: [
+                    '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                    '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                    '#fa709a', '#fee140', '#a8edea', '#fed6e3'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: title
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    currentCharts.push(chart);
+}
+
+function createBarChart(canvasId, data, title) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.name),
+            datasets: [{
+                label: 'Количество',
+                data: data.map(item => item.count),
+                backgroundColor: '#667eea',
+                borderColor: '#764ba2',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: title
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    currentCharts.push(chart);
+}
+
+function createLineChart(canvasId, data, title) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.name),
+            datasets: [{
+                label: 'Активность',
+                data: data.map(item => item.count),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: title
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    currentCharts.push(chart);
+}
+
+function getMarketplaceStats(data) {
+    const stats = {};
+    data.forEach(item => {
+        stats[item.marketplace] = (stats[item.marketplace] || 0) + 1;
+    });
+    
+    return Object.entries(stats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => `
+            <div class="stat-item">
+                <span>${name}</span>
+                <span class="count">${count}</span>
+            </div>
+        `).join('');
+}
+
+function getCategoryStats(data, limit = 5) {
+    const stats = {};
+    data.forEach(item => {
+        stats[item.category] = (stats[item.category] || 0) + 1;
+    });
+    
+    return Object.entries(stats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([name, count]) => `
+            <div class="stat-item">
+                <span>${name}</span>
+                <span class="count">${count}</span>
+            </div>
+        `).join('');
+}
+
+function getProductStats(data, limit = 8) {
+    const stats = {};
+    data.forEach(item => {
+        stats[item.product_query] = (stats[item.product_query] || 0) + 1;
+    });
+    
+    return Object.entries(stats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([name, count]) => `
+            <div class="stat-item">
+                <span title="${name}">${name.length > 25 ? name.substring(0, 25) + '...' : name}</span>
+                <span class="count">${count}</span>
+            </div>
+        `).join('');
+}
+
+function getTodayChoices(data) {
+    const today = new Date().toDateString();
+    return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
+}
