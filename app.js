@@ -6,10 +6,8 @@ tg.enableClosingConfirmation();
 // Получаем ID пользователя Telegram
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
-// ЗАМЕНИТЕ НА ВАШ REAL Telegram ID
-const ADMIN_IDS = ['6398233919']; // Ваш ID
-
-const isAdmin = ADMIN_IDS.includes(userTelegramId.toString());
+// ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
+const ADMIN_PASSWORD = "admin123";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,18 +23,64 @@ function showWelcomeScreen() {
             <p>Исследуем популярные товары на маркетплейсах</p>
             
             <div class="welcome-buttons">
-                ${isAdmin ? `
-                    <button class="btn-main" onclick="showAdminMarketplaceSelect()">
-                        📊 Панель аналитики
-                    </button>
-                ` : `
-                    <button class="btn-main" onclick="showUserSurvey()">
-                        📝 Пройти опрос
-                    </button>
-                `}
+                <button class="btn-main" onclick="showUserSurvey()">
+                    📝 Пройти опрос
+                </button>
+                <button class="btn-main admin-login-btn" onclick="showAdminLogin()">
+                    🔐 Я админ
+                </button>
             </div>
         </div>
     `;
+}
+
+// ==================== ЭКРАН ВВОДА ПАРОЛЯ ====================
+
+function showAdminLogin() {
+    document.getElementById('app').innerHTML = `
+        <div class="password-screen">
+            <h2>🔐 Вход в панель админа</h2>
+            <p>Введите пароль для доступа к аналитике</p>
+            
+            <input type="password" id="adminPassword" placeholder="Введите пароль" class="password-input">
+            <button id="submitPassword" class="submit-btn">Войти</button>
+            
+            <button onclick="showWelcomeScreen()" class="submit-btn" style="margin-top: 10px; background: #666;">
+                ← Назад
+            </button>
+            
+            <div id="passwordMessage"></div>
+        </div>
+    `;
+
+    document.getElementById('submitPassword').addEventListener('click', checkAdminPassword);
+    document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkAdminPassword();
+        }
+    });
+}
+
+function checkAdminPassword() {
+    const passwordInput = document.getElementById('adminPassword');
+    const messageDiv = document.getElementById('passwordMessage');
+    const password = passwordInput.value.trim();
+
+    if (!password) {
+        messageDiv.innerHTML = '<div class="error-message">Введите пароль</div>';
+        return;
+    }
+
+    if (password === ADMIN_PASSWORD) {
+        messageDiv.innerHTML = '<div class="success-message">✅ Доступ разрешен</div>';
+        setTimeout(() => {
+            showAdminMarketplaceSelect();
+        }, 1000);
+    } else {
+        messageDiv.innerHTML = '<div class="error-message">❌ Неверный пароль</div>';
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
 }
 
 // ==================== ПОЛЬЗОВАТЕЛЬСКИЙ ОПРОС ====================
@@ -276,7 +320,6 @@ function showStep(stepNumber) {
 }
 
 function initUserSurvey() {
-    // Шаг 1: Выбор маркетплейса
     document.querySelectorAll('.btn-marketplace').forEach(btn => {
         btn.addEventListener('click', (e) => {
             userData.marketplace = e.target.dataset.value;
@@ -285,7 +328,6 @@ function initUserSurvey() {
         });
     });
 
-    // Шаг 3: Отправка товара
     document.getElementById('submitProduct').addEventListener('click', submitProduct);
 }
 
@@ -450,7 +492,7 @@ function showAdminMarketplaceSelect() {
             </div>
             
             <button onclick="showWelcomeScreen()" class="submit-btn" style="margin-top: 20px;">
-                ← Назад
+                ← Назад в меню
             </button>
         </div>
     `;
@@ -501,7 +543,6 @@ function displayAdminStats(data, allData) {
     const totalUsers = new Set(allData.map(item => item.user_id)).size;
     const filteredUsers = new Set(data.map(item => item.user_id)).size;
 
-    // 4 основных аналитики
     const statsHTML = `
         <div class="total-stats">
             <h3>📈 Общая статистика</h3>
