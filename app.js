@@ -7,7 +7,7 @@ tg.enableClosingConfirmation();
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "ASTINAL1009.";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -652,3 +652,4 @@ function getRecentChoices(recent) {
         </div>
     `).join('');
 }
+
