@@ -7,7 +7,7 @@ tg.enableClosingConfirmation();
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
-const ADMIN_PASSWORD = "ASTINAL1009.";
+const ADMIN_PASSWORD = "admin123";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -469,6 +469,7 @@ async function submitProduct() {
 // ==================== АДМИНСКАЯ ПАНЕЛЬ ====================
 
 let selectedMarketplace = 'all';
+let currentCharts = [];
 
 function showAdminMarketplaceSelect() {
     document.getElementById('app').innerHTML = `
@@ -512,8 +513,22 @@ function showAdminAnalytics(marketplace) {
                 <button class="btn-admin ${marketplace === 'Яндекс.Маркет' ? 'active' : ''}" onclick="showAdminAnalytics('Яндекс.Маркет')">Яндекс.Маркет</button>
             </div>
 
-            <div id="adminStats">
-                <!-- Статистика загружается здесь -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('stats')">📊 Статистика</div>
+                <div class="tab" onclick="switchTab('charts')">📈 Графики</div>
+                <div class="tab" onclick="switchTab('table')">📋 Таблица</div>
+            </div>
+
+            <div id="adminStats" class="tab-content active">
+                <div class="loading">Загрузка...</div>
+            </div>
+
+            <div id="adminCharts" class="tab-content">
+                <div class="loading">Загрузка...</div>
+            </div>
+
+            <div id="adminTable" class="tab-content">
+                <div class="loading">Загрузка...</div>
             </div>
             
             <button onclick="showAdminMarketplaceSelect()" class="submit-btn" style="margin-top: 20px;">
@@ -523,6 +538,24 @@ function showAdminAnalytics(marketplace) {
     `;
 
     loadAdminStats();
+    setTimeout(() => {
+        loadAdminCharts();
+        loadAdminTable();
+    }, 100);
+}
+
+function switchTab(tabName) {
+    // Скрыть все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Показать выбранную вкладку
+    document.getElementById('admin' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    event.target.classList.add('active');
 }
 
 function loadAdminStats() {
@@ -542,114 +575,59 @@ function loadAdminStats() {
 function displayAdminStats(data, allData) {
     const totalUsers = new Set(allData.map(item => item.user_id)).size;
     const filteredUsers = new Set(data.map(item => item.user_id)).size;
+    const todayChoices = getTodayChoices(data);
+    const avgPerUser = filteredUsers > 0 ? (data.length / filteredUsers).toFixed(1) : 0;
 
     const statsHTML = `
-        <div class="total-stats">
-            <h3>📈 Общая статистика</h3>
-            <div class="stat-item">Всего выборов: <span class="count">${data.length}</span></div>
-            <div class="stat-item">Уникальных пользователей: <span class="count">${filteredUsers}</span></div>
-            <div class="stat-item">Среднее на пользователя: <span class="count">${filteredUsers > 0 ? (data.length / filteredUsers).toFixed(1) : 0}</span></div>
+        <div class="analytics-section">
+            <div class="section-title">📈 Ключевые метрики</div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number">${data.length}</div>
+                    <div class="stat-label">Всего выборов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${filteredUsers}</div>
+                    <div class="stat-label">Уникальных пользователей</div>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number">${avgPerUser}</div>
+                    <div class="stat-label">Среднее на пользователя</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${todayChoices}</div>
+                    <div class="stat-label">Выборов сегодня</div>
+                </div>
+            </div>
         </div>
 
-        <div class="stats-grid">
+        <div class="analytics-section">
+            <div class="section-title">🏪 Распределение по маркетплейсам</div>
             <div class="stat-card">
-                <h3>🏪 Распределение по маркетплейсам</h3>
                 ${getMarketplaceStats(data)}
             </div>
-            
+        </div>
+
+        <div class="analytics-section">
+            <div class="section-title">📁 Топ категорий</div>
             <div class="stat-card">
-                <h3>📁 Топ категорий</h3>
-                ${getCategoryStats(data, 5)}
+                ${getCategoryStats(data, 8)}
             </div>
         </div>
 
-        <div class="stats-grid">
+        <div class="analytics-section">
+            <div class="section-title">📦 Популярные товары</div>
             <div class="stat-card">
-                <h3>📦 Популярные товары</h3>
-                ${getProductStats(data, 8)}
+                ${getProductStats(data, 10)}
             </div>
-            
-            <div class="stat-card">
-                <h3>👥 Активность пользователей</h3>
-                <div class="stat-item">Всего пользователей: <span class="count">${totalUsers}</span></div>
-                <div class="stat-item">Активных в выборке: <span class="count">${filteredUsers}</span></div>
-                <div class="stat-item">Выборов сегодня: <span class="count">${getTodayChoices(data)}</span></div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <h3>🕒 Последние выборы</h3>
-            ${getRecentChoices(data.slice(-5).reverse())}
         </div>
     `;
 
     document.getElementById('adminStats').innerHTML = statsHTML;
 }
 
-function getMarketplaceStats(data) {
-    const stats = {};
-    data.forEach(item => {
-        stats[item.marketplace] = (stats[item.marketplace] || 0) + 1;
-    });
-    
-    return Object.entries(stats)
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, count]) => `
-            <div class="stat-item">
-                <span>${name}</span>
-                <span class="count">${count}</span>
-            </div>
-        `).join('');
-}
-
-function getCategoryStats(data, limit = 5) {
-    const stats = {};
-    data.forEach(item => {
-        stats[item.category] = (stats[item.category] || 0) + 1;
-    });
-    
-    return Object.entries(stats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limit)
-        .map(([name, count]) => `
-            <div class="stat-item">
-                <span>${name}</span>
-                <span class="count">${count}</span>
-            </div>
-        `).join('');
-}
-
-function getProductStats(data, limit = 8) {
-    const stats = {};
-    data.forEach(item => {
-        stats[item.product_query] = (stats[item.product_query] || 0) + 1;
-    });
-    
-    return Object.entries(stats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limit)
-        .map(([name, count]) => `
-            <div class="stat-item">
-                <span title="${name}">${name.length > 25 ? name.substring(0, 25) + '...' : name}</span>
-                <span class="count">${count}</span>
-            </div>
-        `).join('');
-}
-
-function getTodayChoices(data) {
-    const today = new Date().toDateString();
-    return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
-}
-
-function getRecentChoices(recent) {
-    return recent.map(item => `
-        <div class="stat-item">
-            <div>
-                <strong>${item.marketplace}</strong> - ${item.category}<br>
-                <small>${item.product_query}</small>
-            </div>
-            <small>${new Date(item.timestamp).toLocaleString('ru-RU')}</small>
-        </div>
-    `).join('');
-}
-
+function loadAdminCharts() {
+    try {
+        const allData = JSON.parse(localStorage.getItem('user_choices') || '
