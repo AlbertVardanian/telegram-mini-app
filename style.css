@@ -1,386 +1,86 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* Добавьте эти стили в конец файла */
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.container {
-    max-width: 400px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.step {
-    display: none;
-}
-
-.step.active {
-    display: block;
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-h1, h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-h1 { font-size: 1.6em; }
-h2 { font-size: 1.4em; }
-
-p {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #666;
-    line-height: 1.5;
-}
-
-.buttons-grid {
-    display: grid;
-    gap: 12px;
-}
-
-.btn-main, .btn-marketplace, .btn-admin {
-    padding: 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    background: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-main:hover, .btn-marketplace:hover, .btn-admin:hover {
-    border-color: #667eea;
-    background: #f8f9ff;
-    transform: translateY(-2px);
-}
-
-.btn-admin.active {
-    border-color: #667eea;
-    background: #667eea;
-    color: white;
-}
-
-.search-input, .product-input, .password-input {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    font-size: 16px;
-    margin-bottom: 15px;
-}
-
-.search-input:focus, .product-input:focus, .password-input:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.results-container {
-    max-height: 300px;
-    overflow-y: auto;
-    margin-bottom: 15px;
-}
-
-.category-section {
-    font-weight: bold;
-    color: #667eea;
-    margin: 15px 0 8px 0;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #667eea;
-    font-size: 1.1em;
-}
-
-.category-item {
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.category-item:hover {
-    background: #f0f4ff;
-    border-color: #667eea;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-}
-
-.submit-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.admin-panel {
-    text-align: center;
-}
-
-.filter-buttons {
+.export-buttons {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin: 15px 0;
     flex-wrap: wrap;
     justify-content: center;
 }
 
-.stats-grid {
-    display: grid;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    border-left: 4px solid #667eea;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.stat-item:last-child {
-    border-bottom: none;
-}
-
-.count {
-    font-weight: bold;
-    color: #667eea;
-}
-
-.total-stats {
-    background: #667eea;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.error-message {
-    color: #e74c3c;
-    text-align: center;
-    margin: 10px 0;
-    padding: 10px;
-    background: #ffeaea;
-    border-radius: 5px;
-    border: 1px solid #e74c3c;
-}
-
-.success-message {
-    color: #27ae60;
-    text-align: center;
-    margin: 10px 0;
-    padding: 10px;
-    background: #eaffea;
-    border-radius: 5px;
-    border: 1px solid #27ae60;
-}
-
-.hidden {
-    display: none;
-}
-
-.welcome-screen {
-    text-align: center;
-}
-
-.welcome-buttons {
-    display: grid;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.password-screen {
-    text-align: center;
-}
-
-.admin-login-btn {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-}
-
-.admin-login-btn:hover {
-    background: linear-gradient(135deg, #ff5252, #e74c3c);
-}
-
-/* Стили для графиков */
-.chart-wrapper {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.chart-container {
-    position: relative;
-    height: 200px;
-    width: 100%;
-}
-
-/* Стили для таблиц */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 14px;
-}
-
-.data-table th,
-.data-table td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.data-table th {
-    background: #f5f5f5;
-    font-weight: bold;
-    position: sticky;
-    top: 0;
-}
-
-.data-table tr:hover {
-    background: #f8f9fa;
-}
-
-/* Стили для кнопки удаления */
-.delete-btn {
-    background: #e74c3c;
+.excel-btn {
+    background: #217346;
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.delete-btn:hover {
-    background: #c0392b;
-}
-
-/* Стили для вкладок */
-.tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.tab {
     padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.tab.active {
-    border-bottom-color: #667eea;
-    color: #667eea;
-    font-weight: bold;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Стили для поиска в таблице */
-.table-search {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    margin-bottom: 15px;
+    cursor: pointer;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.analytics-section {
-    margin-bottom: 25px;
+.excel-btn:hover {
+    background: #1a5c38;
 }
 
-.section-title {
-    font-size: 1.2em;
-    margin-bottom: 15px;
-    color: #333;
-    border-left: 4px solid #667eea;
-    padding-left: 10px;
-}
-
-.stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.stat-number {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: #667eea;
-    text-align: center;
-}
-
-.stat-label {
-    text-align: center;
-    color: #666;
-    font-size: 0.9em;
-}
-
-.export-btn {
+.csv-btn {
     background: #27ae60;
     color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 8px;
     cursor: pointer;
-    margin: 10px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.export-btn:hover {
+.csv-btn:hover {
     background: #219a52;
 }
 
-.loading {
-    text-align: center;
-    padding: 20px;
-    color: #666;
+.json-btn {
+    background: #e67e22;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.json-btn:hover {
+    background: #d35400;
+}
+
+.export-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border-left: 4px solid #667eea;
+}
+
+.export-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.export-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.export-option input {
+    margin: 0;
 }
