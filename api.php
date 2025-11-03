@@ -62,21 +62,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
             'success' => true, 
             'remaining' => $remaining,
-            'message' => 'Спасибо за участие!'
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Ошибка сохранения']);
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (!file_exists($filename)) {
-        echo json_encode([]);
-        exit;
-    }
-    
-    $data = json_decode(file_get_contents($filename), true) ?? [];
-    echo json_encode($data);
-}
-?>
+            'message' =>
