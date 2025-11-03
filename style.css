@@ -77,7 +77,7 @@ p {
     color: white;
 }
 
-.search-input, .product-input {
+.search-input, .product-input, .password-input {
     width: 100%;
     padding: 15px;
     border: 2px solid #e0e0e0;
@@ -86,7 +86,7 @@ p {
     margin-bottom: 15px;
 }
 
-.search-input:focus, .product-input:focus {
+.search-input:focus, .product-input:focus, .password-input:focus {
     outline: none;
     border-color: #667eea;
 }
@@ -142,7 +142,6 @@ p {
     transform: none;
 }
 
-/* Стили для админки */
 .admin-panel {
     text-align: center;
 }
@@ -193,32 +192,6 @@ p {
     margin-bottom: 20px;
 }
 
-.chart-container {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.data-table th,
-.data-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.data-table th {
-    background: #f5f5f5;
-    font-weight: bold;
-}
-
 .error-message {
     color: #e74c3c;
     text-align: center;
@@ -251,4 +224,17 @@ p {
     display: grid;
     gap: 15px;
     margin-top: 25px;
+}
+
+.password-screen {
+    text-align: center;
+}
+
+.admin-login-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+}
+
+.admin-login-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #e74c3c);
 }
