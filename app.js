@@ -7,7 +7,7 @@ tg.enableClosingConfirmation();
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
-const ADMIN_PASSWORD = "ASTINAL1009.";
+const ADMIN_PASSWORD = "admin123";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -707,32 +707,11 @@ function displayAdminTable(data) {
             <p>Всего записей: ${data.length}</p>
             
             <div class="export-section">
-                <div class="section-title">📤 Экспорт данных</div>
-                <div class="export-buttons">
-                    <button class="excel-btn" onclick="exportToExcel()">
-                        📊 Excel (данные)
-                    </button>
-                    <button class="excel-btn" onclick="exportStatsToExcel()">
-                        📈 Excel (статистика)
-                    </button>
-                    <button class="csv-btn" onclick="exportToCSV()">
-                        📄 CSV
-                    </button>
-                    <button class="json-btn" onclick="exportToJSON()">
-                        🔤 JSON
-                    </button>
-                </div>
-                
-                <div class="export-options">
-                    <div class="export-option">
-                        <input type="checkbox" id="includeUserIds" checked>
-                        <label for="includeUserIds">Включать User ID</label>
-                    </div>
-                    <div class="export-option">
-                        <input type="checkbox" id="includeTimestamps" checked>
-                        <label for="includeTimestamps">Включать временные метки</label>
-                    </div>
-                </div>
+                <div class="section-title">📤 Экспорт в Excel</div>
+                <p>Скачайте все данные в формате Excel таблицы</p>
+                <button class="excel-btn" onclick="exportToExcel()">
+                    📊 Скачать Excel файл
+                </button>
             </div>
             
             <input type="text" id="tableSearch" placeholder="Поиск по товарам..." class="table-search">
@@ -813,7 +792,7 @@ function deleteProduct(index) {
     }
 }
 
-// Функция экспорта в Excel
+// Функция экспорта в Excel (РАБОЧАЯ ВЕРСИЯ)
 function exportToExcel() {
     try {
         const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
@@ -821,217 +800,47 @@ function exportToExcel() {
             ? allData 
             : allData.filter(item => item.marketplace === selectedMarketplace);
 
-        const includeUserIds = document.getElementById('includeUserIds')?.checked ?? true;
-        const includeTimestamps = document.getElementById('includeTimestamps')?.checked ?? true;
-
-        const excelData = filteredData.map(item => {
-            const row = {
-                'Маркетплейс': item.marketplace,
-                'Категория': item.category,
-                'Товар': item.product_query
-            };
-            if (includeTimestamps) {
-                row['Дата и время'] = new Date(item.timestamp).toLocaleString('ru-RU');
-            }
-            if (includeUserIds) {
-                row['User ID'] = item.user_id;
-            }
-            return row;
-        });
-
-        const ws = XLSX.utils.json_to_sheet(excelData);
-        
-        const colWidths = [
-            { wch: 15 },
-            { wch: 25 },
-            { wch: 40 }
+        // Создаем данные для Excel
+        const excelData = [
+            // Заголовки
+            ['Маркетплейс', 'Категория', 'Товар', 'Дата и время', 'User ID'],
+            // Данные
+            ...filteredData.map(item => [
+                item.marketplace,
+                item.category,
+                item.product_query,
+                new Date(item.timestamp).toLocaleString('ru-RU'),
+                item.user_id
+            ])
         ];
-        if (includeTimestamps) colWidths.push({ wch: 20 });
-        if (includeUserIds) colWidths.push({ wch: 15 });
-        
-        ws['!cols'] = colWidths;
 
+        // Создаем рабочую книгу
         const wb = XLSX.utils.book_new();
+        
+        // Создаем рабочий лист из данных
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        
+        // Настраиваем ширину колонок
+        ws['!cols'] = [
+            { wch: 15 }, // Маркетплейс
+            { wch: 25 }, // Категория
+            { wch: 40 }, // Товар
+            { wch: 20 }, // Дата и время
+            { wch: 15 }  // User ID
+        ];
+
+        // Добавляем рабочий лист в книгу
         XLSX.utils.book_append_sheet(wb, ws, 'Данные');
 
+        // Генерируем имя файла
         const fileName = `analytics_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+        // Сохраняем файл
         XLSX.writeFile(wb, fileName);
 
     } catch (error) {
-        console.error('Error exporting Excel:', error);
-        alert('❌ Ошибка при экспорте в Excel');
-    }
-}
-
-// Функция экспорта статистики в Excel
-function exportStatsToExcel() {
-    try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
-
-        const marketplaceStats = {};
-        allData.forEach(item => {
-            marketplaceStats[item.marketplace] = (marketplaceStats[item.marketplace] || 0) + 1;
-        });
-
-        const categoryStats = {};
-        filteredData.forEach(item => {
-            categoryStats[item.category] = (categoryStats[item.category] || 0) + 1;
-        });
-
-        const productStats = {};
-        filteredData.forEach(item => {
-            productStats[item.product_query] = (productStats[item.product_query] || 0) + 1;
-        });
-
-        const summaryData = [
-            ['Отчет по аналитике покупок'],
-            ['Дата экспорта', new Date().toLocaleString('ru-RU')],
-            ['Выбранный маркетплейс', selectedMarketplace === 'all' ? 'Все' : selectedMarketplace],
-            ['Всего записей', filteredData.length],
-            ['Уникальных пользователей', new Set(filteredData.map(item => item.user_id)).size],
-            [''],
-            ['Статистика по маркетплейсам'],
-            ['Маркетплейс', 'Количество']
-        ];
-
-        Object.entries(marketplaceStats)
-            .sort((a, b) => b[1] - a[1])
-            .forEach(([name, count]) => {
-                summaryData.push([name, count]);
-            });
-
-        summaryData.push(['', '']);
-        summaryData.push(['Статистика по категориям']);
-        summaryData.push(['Категория', 'Количество']);
-
-        Object.entries(categoryStats)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 20)
-            .forEach(([name, count]) => {
-                summaryData.push([name, count]);
-            });
-
-        summaryData.push(['', '']);
-        summaryData.push(['Популярные товары']);
-        summaryData.push(['Товар', 'Количество']);
-
-        Object.entries(productStats)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 20)
-            .forEach(([name, count]) => {
-                summaryData.push([name, count]);
-            });
-
-        const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
-        const ws2 = XLSX.utils.json_to_sheet(filteredData.map(item => ({
-            'Маркетплейс': item.marketplace,
-            'Категория': item.category,
-            'Товар': item.product_query,
-            'Дата и время': new Date(item.timestamp).toLocaleString('ru-RU'),
-            'User ID': item.user_id
-        })));
-
-        ws1['!cols'] = [{ wch: 30 }, { wch: 15 }];
-        ws2['!cols'] = [
-            { wch: 15 },
-            { wch: 25 },
-            { wch: 40 },
-            { wch: 20 },
-            { wch: 15 }
-        ];
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws1, 'Статистика');
-        XLSX.utils.book_append_sheet(wb, ws2, 'Данные');
-
-        const fileName = `analytics_report_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-
-    } catch (error) {
-        console.error('Error exporting stats to Excel:', error);
-        alert('❌ Ошибка при экспорте статистики в Excel');
-    }
-}
-
-// Функция экспорта в CSV
-function exportToCSV() {
-    try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
-
-        const includeUserIds = document.getElementById('includeUserIds')?.checked ?? true;
-        const includeTimestamps = document.getElementById('includeTimestamps')?.checked ?? true;
-
-        let headers = ['Маркетплейс', 'Категория', 'Товар'];
-        if (includeTimestamps) headers.push('Время');
-        if (includeUserIds) headers.push('User ID');
-
-        const csvContent = [
-            headers.join(','),
-            ...filteredData.map(item => {
-                let row = [
-                    `"${item.marketplace}"`,
-                    `"${item.category}"`,
-                    `"${item.product_query}"`
-                ];
-                if (includeTimestamps) {
-                    row.push(`"${new Date(item.timestamp).toLocaleString('ru-RU')}"`);
-                }
-                if (includeUserIds) {
-                    row.push(`"${item.user_id}"`);
-                }
-                return row.join(',');
-            })
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `analytics_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } catch (error) {
-        console.error('Error exporting CSV:', error);
-        alert('❌ Ошибка при экспорте данных');
-    }
-}
-
-// Функция экспорта в JSON
-function exportToJSON() {
-    try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
-
-        const jsonData = {
-            exportDate: new Date().toISOString(),
-            marketplace: selectedMarketplace,
-            totalRecords: filteredData.length,
-            data: filteredData
-        };
-
-        const jsonString = JSON.stringify(jsonData, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `analytics_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.json`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } catch (error) {
-        console.error('Error exporting JSON:', error);
-        alert('❌ Ошибка при экспорте в JSON');
+        console.error('Error exporting to Excel:', error);
+        alert('❌ Ошибка при экспорте в Excel: ' + error.message);
     }
 }
 
@@ -1218,4 +1027,3 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
-
