@@ -10,7 +10,7 @@ const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 const ADMIN_PASSWORD = "ASTINAL1009.";
 
 // URL вашего сервера (ЗАМЕНИТЕ НА ВАШ ДОМЕН!)
-const API_URL = "https://your-domain.com/api.php";
+const API_URL = "https://mytelegramapp.ct.ws/api.php";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -1107,3 +1107,4 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
+
