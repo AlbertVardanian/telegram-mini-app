@@ -1,6 +1,6 @@
 RewriteEngine On
 Header always set Access-Control-Allow-Origin "*"
-Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header always set Access-Control-Allow-Methods "GET, POST, DELETE, OPTIONS"
 Header always set Access-Control-Allow-Headers "Content-Type"
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ $1 [R=200,L]
