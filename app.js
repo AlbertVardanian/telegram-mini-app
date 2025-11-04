@@ -59,30 +59,51 @@ async function loadFromServer() {
     }
 }
 
-// Функция для удаления данных с сервера
-async function deleteFromServer(timestamp, productQuery) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                timestamp: timestamp,
-                product_query: productQuery,
-                user_id: userTelegramId
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            return result;
-        } else {
-            throw new Error('Server error');
+// Функция удаления товара (ИСПРАВЛЕННАЯ)
+async function deleteProduct(itemJson) {
+    const item = JSON.parse(itemJson);
+    
+    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+        try {
+            // Пытаемся удалить с сервера
+            const result = await deleteFromServer(item.timestamp, item.product_query);
+            
+            if (result.success) {
+                // Обновляем локальные данные
+                allServerData = allServerData.filter(dataItem => 
+                    !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+                );
+                
+                loadAdminStats();
+                loadAdminCharts();
+                loadAdminTable();
+                
+                alert('✅ Товар удален');
+            } else {
+                // Если сервер вернул ошибку, удаляем локально
+                allServerData = allServerData.filter(dataItem => 
+                    !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+                );
+                
+                loadAdminStats();
+                loadAdminCharts();
+                loadAdminTable();
+                
+                alert('✅ Товар удален (локально)');
+            }
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            // При любой ошибке удаляем локально
+            allServerData = allServerData.filter(dataItem => 
+                !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+            );
+            
+            loadAdminStats();
+            loadAdminCharts();
+            loadAdminTable();
+            
+            alert('✅ Товар удален (локально)');
         }
-    } catch (error) {
-        console.error('Error deleting from server:', error);
-        throw error;
     }
 }
 
@@ -1089,3 +1110,4 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
+
