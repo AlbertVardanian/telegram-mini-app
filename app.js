@@ -9,9 +9,6 @@ const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ
 const ADMIN_PASSWORD = "ASTINAL1009.";
 
-// URL вашего сервера
-const API_URL = "https://mytelegramapp.ct.ws/api.php";
-
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
     showWelcomeScreen();
@@ -19,83 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ==================== ОБЩИЕ ФУНКЦИИ ====================
 
-// Функция для отправки данных на сервер
-async function saveToServer(data) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            return result;
-        } else {
-            throw new Error('Server error');
-        }
-    } catch (error) {
-        console.error('Error saving to server:', error);
-        throw error;
-    }
-}
-
-// Функция для получения данных с сервера
-async function loadFromServer() {
-    try {
-        const response = await fetch(API_URL);
-        if (response.ok) {
-            const data = await response.json();
-            return data;
-        } else {
-            throw new Error('Server not available');
-        }
-    } catch (error) {
-        console.error('Error loading from server:', error);
-        // Возвращаем данные из localStorage как запасной вариант
-        const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        return localData;
-    }
-}
-
-// Функция для удаления данных с сервера
-async function deleteFromServer(timestamp, productQuery) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                timestamp: timestamp,
-                product_query: productQuery,
-                user_id: userTelegramId
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            return result;
-        } else {
-            throw new Error('Server error');
-        }
-    } catch (error) {
-        console.error('Error deleting from server:', error);
-        throw error;
-    }
-}
-
-// Функция для сохранения в localStorage
-async function saveToLocalStorage(data) {
+// Функция для сохранения данных
+async function saveData(data) {
     try {
         const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         
         // Проверяем лимит для пользователя
         const userChoices = existingData.filter(choice => choice.user_id === data.user_id);
         if (userChoices.length >= 5) {
-            return { error: 'Превышен лимит товаров' };
+            return { error: 'Превышен лимит товаров (максимум 5)' };
         }
 
         // Проверяем дубликаты
@@ -104,18 +33,51 @@ async function saveToLocalStorage(data) {
         );
         
         if (duplicate) {
-            return { error: 'Дубликат товара' };
+            return { error: 'Такой товар уже добавлен' };
         }
 
         // Сохраняем данные
         existingData.push(data);
         localStorage.setItem('user_choices', JSON.stringify(existingData));
         
-        return { success: true, message: 'Данные сохранены локально' };
+        const remaining = 5 - userChoices.length - 1;
+        return { 
+            success: true, 
+            remaining: remaining,
+            message: '✅ Данные успешно сохранены!'
+        };
         
     } catch (error) {
-        console.error('Error saving to localStorage:', error);
-        return { error: 'Ошибка сохранения' };
+        console.error('Error saving data:', error);
+        return { error: 'Ошибка сохранения данных' };
+    }
+}
+
+// Функция для получения данных
+async function loadData() {
+    try {
+        const data = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        return data;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        return [];
+    }
+}
+
+// Функция для удаления данных
+async function deleteData(timestamp, productQuery) {
+    try {
+        const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        const newData = existingData.filter(item => 
+            !(item.timestamp === timestamp && item.product_query === productQuery)
+        );
+        
+        localStorage.setItem('user_choices', JSON.stringify(newData));
+        return { success: true, message: 'Данные удалены' };
+        
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        return { error: 'Ошибка удаления' };
     }
 }
 
@@ -540,22 +502,17 @@ async function submitProduct() {
     userData.timestamp = new Date().toISOString();
 
     try {
-        // Пытаемся сохранить на сервер
-        const result = await saveToServer(userData);
+        const result = await saveData(userData);
         
         if (result.success) {
             showStep(4);
         } else {
-            // Если сервер вернул ошибку, сохраняем локально
-            await saveToLocalStorage(userData);
-            showStep(4);
+            alert(result.error || 'Ошибка при сохранении данных');
         }
 
     } catch (error) {
         console.error('Error:', error);
-        // При любой ошибке сохраняем локально
-        await saveToLocalStorage(userData);
-        showStep(4);
+        alert('Ошибка при сохранении данных');
     }
 }
 
@@ -563,7 +520,7 @@ async function submitProduct() {
 
 let selectedMarketplace = 'all';
 let currentCharts = [];
-let allServerData = [];
+let allData = [];
 
 function showAdminMarketplaceSelect() {
     document.getElementById('app').innerHTML = `
@@ -632,30 +589,13 @@ async function showAdminAnalytics(marketplace) {
     `;
 
     try {
-        // Загружаем данные с сервера И локальные данные
-        const serverData = await loadFromServer();
-        const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        
-        // Объединяем данные (убираем дубликаты)
-        const allData = [...serverData];
-        localData.forEach(localItem => {
-            const exists = allData.find(serverItem => 
-                serverItem.timestamp === localItem.timestamp && 
-                serverItem.product_query === localItem.product_query
-            );
-            if (!exists) {
-                allData.push(localItem);
-            }
-        });
-        
-        allServerData = allData;
+        allData = await loadData();
         loadAdminStats();
         setTimeout(() => {
             loadAdminCharts();
             loadAdminTable();
         }, 100);
     } catch (error) {
-        console.error('Error loading data:', error);
         document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных</p>';
     }
 }
@@ -675,10 +615,10 @@ function switchTab(tabName) {
 function loadAdminStats() {
     try {
         const filteredData = selectedMarketplace === 'all' 
-            ? allServerData 
-            : allServerData.filter(item => item.marketplace === selectedMarketplace);
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
 
-        displayAdminStats(filteredData, allServerData);
+        displayAdminStats(filteredData, allData);
     } catch (error) {
         console.error('Error loading stats:', error);
         document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных</p>';
@@ -744,8 +684,8 @@ function displayAdminStats(data, allData) {
 function loadAdminCharts() {
     try {
         const filteredData = selectedMarketplace === 'all' 
-            ? allServerData 
-            : allServerData.filter(item => item.marketplace === selectedMarketplace);
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
 
         currentCharts.forEach(chart => chart.destroy());
         currentCharts = [];
@@ -803,8 +743,8 @@ function displayAdminCharts(data) {
 function loadAdminTable() {
     try {
         const filteredData = selectedMarketplace === 'all' 
-            ? allServerData 
-            : allServerData.filter(item => item.marketplace === selectedMarketplace);
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
 
         displayAdminTable(filteredData);
     } catch (error) {
@@ -884,30 +824,25 @@ async function deleteProduct(itemJson) {
     
     if (confirm('Вы уверены, что хотите удалить этот товар?')) {
         try {
-            // Пытаемся удалить с сервера
-            await deleteFromServer(item.timestamp, item.product_query);
+            const result = await deleteData(item.timestamp, item.product_query);
+            
+            if (result.success) {
+                allData = allData.filter(dataItem => 
+                    !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+                );
+                
+                loadAdminStats();
+                loadAdminCharts();
+                loadAdminTable();
+                
+                alert('✅ Товар удален');
+            } else {
+                alert('❌ Ошибка при удалении товара: ' + result.error);
+            }
         } catch (error) {
-            console.error('Error deleting from server:', error);
+            console.error('Error deleting product:', error);
+            alert('❌ Ошибка при удалении товара');
         }
-        
-        // Удаляем из локальных данных в любом случае
-        allServerData = allServerData.filter(dataItem => 
-            !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
-        );
-        
-        // Также удаляем из localStorage
-        const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        const newLocalData = localData.filter(dataItem => 
-            !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
-        );
-        localStorage.setItem('user_choices', JSON.stringify(newLocalData));
-        
-        // Обновляем интерфейс
-        loadAdminStats();
-        loadAdminCharts();
-        loadAdminTable();
-        
-        alert('✅ Товар удален');
     }
 }
 
@@ -915,8 +850,8 @@ async function deleteProduct(itemJson) {
 function exportToCSV() {
     try {
         const filteredData = selectedMarketplace === 'all' 
-            ? allServerData 
-            : allServerData.filter(item => item.marketplace === selectedMarketplace);
+            ? allData 
+            : allData.filter(item => item.marketplace === selectedMarketplace);
 
         if (filteredData.length === 0) {
             alert('❌ Нет данных для экспорта');
