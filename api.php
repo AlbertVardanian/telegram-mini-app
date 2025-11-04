@@ -1,8 +1,9 @@
 <?php
+// Упрощенная версия API для InfinityFree
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: *');
+header('Access-Control-Allow-Headers: *');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -10,110 +11,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $filename = 'user_choices.json';
 
-function readData() {
-    global $filename;
-    if (!file_exists($filename)) {
-        return [];
-    }
-    $data = file_get_contents($filename);
-    return json_decode($data, true) ?: [];
-}
-
-function saveData($data) {
-    global $filename;
-    return file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-}
+// Простой лог для отладки
+file_put_contents('debug.log', date('Y-m-d H:i:s') . ' - ' . $_SERVER['REQUEST_METHOD'] . PHP_EOL, FILE_APPEND);
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $data = readData();
-    echo json_encode($data);
+    if (!file_exists($filename)) {
+        echo json_encode([]);
+    } else {
+        $data = file_get_contents($filename);
+        echo $data ?: '[]';
+    }
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($input['user_id']) || !isset($input['marketplace']) || 
-        !isset($input['category']) || !isset($input['product_query'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Недостаточно данных']);
-        exit;
+    $current_data = [];
+    if (file_exists($filename)) {
+        $current_data = json_decode(file_get_contents($filename), true) ?: [];
     }
     
-    $current_data = readData();
+    // Добавляем данные
+    $input['timestamp'] = date('Y-m-d H:i:s');
+    $current_data[] = $input;
     
-    $userChoices = array_filter($current_data, function($choice) use ($input) {
-        return $choice['user_id'] == $input['user_id'];
-    });
-    
-    if (count($userChoices) >= 5) {
-        http_response_code(429);
-        echo json_encode(['error' => 'Превышен лимит товаров (максимум 5)']);
-        exit;
-    }
-    
-    $duplicate = array_filter($userChoices, function($choice) use ($input) {
-        return strtolower($choice['product_query']) == strtolower($input['product_query']);
-    });
-    
-    if (count($duplicate) > 0) {
-        http_response_code(409);
-        echo json_encode(['error' => 'Такой товар уже добавлен']);
-        exit;
-    }
-    
-    $data = [
-        'user_id' => $input['user_id'],
-        'anon_id' => $input['anon_id'] ?? 'unknown',
-        'marketplace' => $input['marketplace'],
-        'category' => $input['category'],
-        'product_query' => $input['product_query'],
-        'timestamp' => $input['timestamp'] ?? date('Y-m-d H:i:s')
-    ];
-    
-    $current_data[] = $data;
-    
-    if (saveData($current_data)) {
-        $remaining = 5 - count($userChoices) - 1;
-        echo json_encode([
-            'success' => true, 
-            'remaining' => $remaining,
-            'message' => 'Данные успешно сохранены'
-        ]);
+    if (file_put_contents($filename, json_encode($current_data, JSON_PRETTY_PRINT))) {
+        echo json_encode(['success' => true, 'message' => 'Saved']);
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Ошибка сохранения на сервере']);
+        echo json_encode(['error' => 'Save failed']);
     }
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!isset($input['timestamp']) || !isset($input['product_query'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Недостаточно данных для удаления']);
-        exit;
-    }
-    
-    $current_data = readData();
-    $initial_count = count($current_data);
-    
-    $current_data = array_filter($current_data, function($item) use ($input) {
-        return !($item['timestamp'] == $input['timestamp'] && $item['product_query'] == $input['product_query']);
-    });
-    
-    $current_data = array_values($current_data);
-    
-    if (count($current_data) < $initial_count && saveData($current_data)) {
-        echo json_encode(['success' => true, 'message' => 'Данные удалены']);
-    } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Ошибка удаления или данные не найдены']);
-    }
-    exit;
-}
-
-http_response_code(405);
-echo json_encode(['error' => 'Метод не поддерживается']);
+echo json_encode(['error' => 'Method not allowed']);
 ?>
