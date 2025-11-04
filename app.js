@@ -64,23 +64,6 @@ async function loadData() {
     }
 }
 
-// Функция для удаления данных
-async function deleteData(timestamp, productQuery) {
-    try {
-        const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        const newData = existingData.filter(item => 
-            !(item.timestamp === timestamp && item.product_query === productQuery)
-        );
-        
-        localStorage.setItem('user_choices', JSON.stringify(newData));
-        return { success: true, message: 'Данные удалены' };
-        
-    } catch (error) {
-        console.error('Error deleting data:', error);
-        return { error: 'Ошибка удаления' };
-    }
-}
-
 // ==================== ГЛАВНЫЙ ЭКРАН ====================
 
 function showWelcomeScreen() {
@@ -753,6 +736,45 @@ function loadAdminTable() {
     }
 }
 
+// ФУНКЦИЯ УДАЛЕНИЯ ТОВАРА
+function deleteProduct(index) {
+    // Получаем текущие отфильтрованные данные
+    const filteredData = selectedMarketplace === 'all' 
+        ? allData 
+        : allData.filter(item => item.marketplace === selectedMarketplace);
+    
+    // Находим товар для удаления
+    const itemToDelete = filteredData[index];
+    
+    if (!itemToDelete) {
+        alert('❌ Товар не найден');
+        return;
+    }
+    
+    if (confirm(`Вы уверены, что хотите удалить товар: "${itemToDelete.product_query}"?`)) {
+        try {
+            // Удаляем товар из основного массива
+            allData = allData.filter(item => 
+                !(item.timestamp === itemToDelete.timestamp && item.product_query === itemToDelete.product_query)
+            );
+            
+            // Сохраняем обратно в localStorage
+            localStorage.setItem('user_choices', JSON.stringify(allData));
+            
+            // Обновляем интерфейс
+            loadAdminStats();
+            loadAdminCharts();
+            loadAdminTable();
+            
+            alert('✅ Товар удален');
+            
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('❌ Ошибка при удалении товара');
+        }
+    }
+}
+
 function displayAdminTable(data) {
     const tableHTML = `
         <div class="analytics-section">
@@ -793,7 +815,7 @@ function displayAdminTable(data) {
                                 <td>${new Date(item.timestamp).toLocaleString('ru-RU')}</td>
                                 <td style="font-size: 10px;">${item.user_id}</td>
                                 <td>
-                                    <button class="delete-btn" onclick="deleteProduct(${JSON.stringify(item).replace(/"/g, '&quot;')})" title="Удалить">
+                                    <button class="delete-btn" onclick="deleteProduct(${index})" title="Удалить">
                                         🗑️
                                     </button>
                                 </td>
@@ -816,38 +838,6 @@ function displayAdminTable(data) {
             row.style.display = text.includes(searchTerm) ? '' : 'none';
         });
     });
-}
-
-// Функция удаления товара (ИСПРАВЛЕННАЯ)
-async function deleteProduct(itemJson) {
-    const item = JSON.parse(itemJson);
-    
-    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
-        try {
-            // Удаляем из основного массива
-            allData = allData.filter(dataItem => 
-                !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
-            );
-            
-            // Удаляем из localStorage
-            const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-            const newLocalData = localData.filter(dataItem => 
-                !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
-            );
-            localStorage.setItem('user_choices', JSON.stringify(newLocalData));
-            
-            // Обновляем интерфейс
-            loadAdminStats();
-            loadAdminCharts();
-            loadAdminTable();
-            
-            alert('✅ Товар удален');
-            
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('❌ Ошибка при удалении товара');
-        }
-    }
 }
 
 // Функция экспорта в CSV
@@ -1085,4 +1075,3 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
-
