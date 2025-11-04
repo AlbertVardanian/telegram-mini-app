@@ -9,7 +9,7 @@ const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
 const ADMIN_PASSWORD = "ASTINAL1009.";
 
-// URL вашего сервера (ЗАМЕНИТЕ НА ВАШ ДОМЕН!)
+// URL вашего сервера
 const API_URL = "https://mytelegramapp.ct.ws/api.php";
 
 // Запуск приложения
@@ -76,9 +76,17 @@ async function deleteFromServer(timestamp, productQuery) {
 // Функция проверки соединения с сервером
 async function checkServerConnection() {
     try {
-        const response = await fetch(API_URL);
-        return response.ok;
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        // Если получили любой ответ - сервер работает
+        return response.ok || true;
     } catch (error) {
+        console.log('Server connection failed:', error);
         return false;
     }
 }
@@ -1107,4 +1115,3 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
-
