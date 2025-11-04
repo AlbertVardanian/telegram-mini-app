@@ -7,7 +7,7 @@ tg.enableClosingConfirmation();
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ
-const ADMIN_PASSWORD = "ASTINAL1009.";
+const ADMIN_PASSWORD = "admin123";
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -61,6 +61,53 @@ async function loadData() {
     } catch (error) {
         console.error('Error loading data:', error);
         return [];
+    }
+}
+
+// Функция удаления товара
+function deleteProduct(index) {
+    // Получаем ВСЕ данные
+    const allCurrentData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+    
+    // Получаем отфильтрованные данные для текущего вида
+    const filteredData = selectedMarketplace === 'all' 
+        ? allCurrentData 
+        : allCurrentData.filter(item => item.marketplace === selectedMarketplace);
+    
+    // Находим товар для удаления по индексу в ОТФИЛЬТРОВАННЫХ данных
+    const itemToDelete = filteredData[index];
+    
+    if (!itemToDelete) {
+        alert('❌ Товар не найден');
+        return;
+    }
+    
+    if (confirm(`Вы уверены, что хотите удалить товар: "${itemToDelete.product_query}"?`)) {
+        try {
+            // Удаляем товар из ВСЕХ данных по уникальным полям
+            const newData = allCurrentData.filter(item => 
+                !(item.timestamp === itemToDelete.timestamp && 
+                  item.product_query === itemToDelete.product_query &&
+                  item.user_id === itemToDelete.user_id)
+            );
+            
+            // Сохраняем обратно в localStorage
+            localStorage.setItem('user_choices', JSON.stringify(newData));
+            
+            // Обновляем глобальный массив
+            allData = newData;
+            
+            // Обновляем интерфейс
+            loadAdminStats();
+            loadAdminCharts();
+            loadAdminTable();
+            
+            alert('✅ Товар удален');
+            
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('❌ Ошибка при удалении товара');
+        }
     }
 }
 
@@ -733,45 +780,6 @@ function loadAdminTable() {
     } catch (error) {
         console.error('Error loading table:', error);
         document.getElementById('adminTable').innerHTML = '<p class="error-message">Ошибка загрузки таблицы</p>';
-    }
-}
-
-// ФУНКЦИЯ УДАЛЕНИЯ ТОВАРА
-function deleteProduct(index) {
-    // Получаем текущие отфильтрованные данные
-    const filteredData = selectedMarketplace === 'all' 
-        ? allData 
-        : allData.filter(item => item.marketplace === selectedMarketplace);
-    
-    // Находим товар для удаления
-    const itemToDelete = filteredData[index];
-    
-    if (!itemToDelete) {
-        alert('❌ Товар не найден');
-        return;
-    }
-    
-    if (confirm(`Вы уверены, что хотите удалить товар: "${itemToDelete.product_query}"?`)) {
-        try {
-            // Удаляем товар из основного массива
-            allData = allData.filter(item => 
-                !(item.timestamp === itemToDelete.timestamp && item.product_query === itemToDelete.product_query)
-            );
-            
-            // Сохраняем обратно в localStorage
-            localStorage.setItem('user_choices', JSON.stringify(allData));
-            
-            // Обновляем интерфейс
-            loadAdminStats();
-            loadAdminCharts();
-            loadAdminTable();
-            
-            alert('✅ Товар удален');
-            
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('❌ Ошибка при удалении товара');
-        }
     }
 }
 
