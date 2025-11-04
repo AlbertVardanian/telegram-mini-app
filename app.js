@@ -818,27 +818,31 @@ function displayAdminTable(data) {
     });
 }
 
-// Функция удаления товара
+// Функция удаления товара (ИСПРАВЛЕННАЯ)
 async function deleteProduct(itemJson) {
     const item = JSON.parse(itemJson);
     
     if (confirm('Вы уверены, что хотите удалить этот товар?')) {
         try {
-            const result = await deleteData(item.timestamp, item.product_query);
+            // Удаляем из основного массива
+            allData = allData.filter(dataItem => 
+                !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+            );
             
-            if (result.success) {
-                allData = allData.filter(dataItem => 
-                    !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
-                );
-                
-                loadAdminStats();
-                loadAdminCharts();
-                loadAdminTable();
-                
-                alert('✅ Товар удален');
-            } else {
-                alert('❌ Ошибка при удалении товара: ' + result.error);
-            }
+            // Удаляем из localStorage
+            const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+            const newLocalData = localData.filter(dataItem => 
+                !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+            );
+            localStorage.setItem('user_choices', JSON.stringify(newLocalData));
+            
+            // Обновляем интерфейс
+            loadAdminStats();
+            loadAdminCharts();
+            loadAdminTable();
+            
+            alert('✅ Товар удален');
+            
         } catch (error) {
             console.error('Error deleting product:', error);
             alert('❌ Ошибка при удалении товара');
@@ -1081,3 +1085,4 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
+
