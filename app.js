@@ -6,7 +6,7 @@ tg.enableClosingConfirmation();
 // Получаем ID пользователя Telegram
 const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 
-// ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
+// ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ
 const ADMIN_PASSWORD = "ASTINAL1009.";
 
 // URL вашего сервера
@@ -42,11 +42,16 @@ async function saveToServer(data) {
 async function loadFromServer() {
     try {
         const response = await fetch(API_URL);
-        const data = await response.json();
-        return data;
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        } else {
+            throw new Error('Server not available');
+        }
     } catch (error) {
-        console.error('Error loading from server:', error);
-        return [];
+        console.error('Error loading from server, using local data:', error);
+        const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        return localData;
     }
 }
 
@@ -73,21 +78,34 @@ async function deleteFromServer(timestamp, productQuery) {
     }
 }
 
-// Функция проверки соединения с сервером
-async function checkServerConnection() {
+// Функция для сохранения в localStorage
+async function saveToLocalStorage(data) {
     try {
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
+        const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         
-        // Если получили любой ответ - сервер работает
-        return response.ok || true;
+        const userChoices = existingData.filter(choice => choice.user_id === data.user_id);
+        if (userChoices.length >= 5) {
+            alert('❌ Вы уже добавили максимальное количество товаров (5)');
+            return { error: 'Превышен лимит товаров' };
+        }
+
+        const duplicate = userChoices.find(choice => 
+            choice.product_query.toLowerCase() === data.product_query.toLowerCase()
+        );
+        
+        if (duplicate) {
+            alert('❌ Вы уже добавляли этот товар');
+            return { error: 'Дубликат товара' };
+        }
+
+        existingData.push(data);
+        localStorage.setItem('user_choices', JSON.stringify(existingData));
+        
+        return { success: true, message: 'Данные сохранены локально' };
+        
     } catch (error) {
-        console.log('Server connection failed:', error);
-        return false;
+        console.error('Error saving to localStorage:', error);
+        return { error: 'Ошибка сохранения' };
     }
 }
 
@@ -107,25 +125,8 @@ function showWelcomeScreen() {
                     🔐 Я админ
                 </button>
             </div>
-            
-            <div id="serverStatus" class="server-status hidden"></div>
         </div>
     `;
-
-    // Проверяем соединение с сервером
-    checkServerConnection().then(isOnline => {
-        const statusDiv = document.getElementById('serverStatus');
-        if (statusDiv) {
-            statusDiv.classList.remove('hidden');
-            if (isOnline) {
-                statusDiv.className = 'server-status server-online';
-                statusDiv.innerHTML = '✅ Сервер подключен - данные сохраняются на всех устройствах';
-            } else {
-                statusDiv.className = 'server-status server-offline';
-                statusDiv.innerHTML = '❌ Сервер недоступен - данные сохраняются только на этом устройстве';
-            }
-        }
-    });
 }
 
 // ==================== ЭКРАН ВВОДА ПАРОЛЯ ====================
@@ -207,7 +208,7 @@ function showUserSurvey() {
 
             <div id="step4" class="step">
                 <h2>🎉 Спасибо за участие!</h2>
-                <p>Ваш выбор сохранен анонимно и поможет нам в аналитике</p>
+                <p>Ваш выбор сохранен и поможет нам в аналитике</p>
                 <button onclick="showWelcomeScreen()" class="submit-btn">Вернуться</button>
             </div>
         </div>
@@ -529,18 +530,19 @@ async function submitProduct() {
     userData.timestamp = new Date().toISOString();
 
     try {
-        // Сохраняем на сервер
         const result = await saveToServer(userData);
         
         if (result.success) {
             showStep(4);
         } else {
-            alert(result.error || 'Ошибка при сохранении данных');
+            await saveToLocalStorage(userData);
+            showStep(4);
         }
 
     } catch (error) {
         console.error('Error:', error);
-        alert('Ошибка при сохранении данных. Проверьте подключение к интернету.');
+        await saveToLocalStorage(userData);
+        showStep(4);
     }
 }
 
@@ -599,15 +601,15 @@ async function showAdminAnalytics(marketplace) {
             </div>
 
             <div id="adminStats" class="tab-content active">
-                <div class="loading">Загрузка данных с сервера...</div>
+                <div class="loading">Загрузка данных...</div>
             </div>
 
             <div id="adminCharts" class="tab-content">
-                <div class="loading">Загрузка данных с сервера...</div>
+                <div class="loading">Загрузка данных...</div>
             </div>
 
             <div id="adminTable" class="tab-content">
-                <div class="loading">Загрузка данных с сервера...</div>
+                <div class="loading">Загрузка данных...</div>
             </div>
             
             <button onclick="showAdminMarketplaceSelect()" class="submit-btn" style="margin-top: 20px;">
@@ -616,7 +618,6 @@ async function showAdminAnalytics(marketplace) {
         </div>
     `;
 
-    // Загружаем данные с сервера
     try {
         allServerData = await loadFromServer();
         loadAdminStats();
@@ -625,7 +626,7 @@ async function showAdminAnalytics(marketplace) {
             loadAdminTable();
         }, 100);
     } catch (error) {
-        document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных с сервера</p>';
+        document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных</p>';
     }
 }
 
@@ -786,7 +787,7 @@ function displayAdminTable(data) {
     const tableHTML = `
         <div class="analytics-section">
             <div class="section-title">📋 Все выборы пользователей</div>
-            <p>Всего записей: ${data.length} (данные с сервера)</p>
+            <p>Всего записей: ${data.length}</p>
             
             <div class="export-section">
                 <div class="section-title">📤 Экспорт данных</div>
@@ -847,7 +848,7 @@ function displayAdminTable(data) {
     });
 }
 
-// Функция удаления товара (работает с сервером)
+// Функция удаления товара
 async function deleteProduct(itemJson) {
     const item = JSON.parse(itemJson);
     
@@ -856,7 +857,6 @@ async function deleteProduct(itemJson) {
             const result = await deleteFromServer(item.timestamp, item.product_query);
             
             if (result.success) {
-                // Обновляем данные
                 allServerData = allServerData.filter(dataItem => 
                     !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
                 );
@@ -888,13 +888,10 @@ function exportToCSV() {
             return;
         }
 
-        // Создаем CSV заголовки
         const headers = ['Маркетплейс', 'Категория', 'Товар', 'Дата и время', 'User ID'];
         
-        // Создаем CSV содержимое
         let csvContent = headers.join(';') + '\n';
         
-        // Добавляем данные
         filteredData.forEach(item => {
             const row = [
                 item.marketplace,
@@ -906,7 +903,6 @@ function exportToCSV() {
             csvContent += row.join(';') + '\n';
         });
 
-        // Создаем и скачиваем файл
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
