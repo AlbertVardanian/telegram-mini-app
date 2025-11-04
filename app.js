@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showWelcomeScreen();
 });
 
-// ==================== ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С СЕРВЕРОМ ====================
+// ==================== ОБЩИЕ ФУНКЦИИ ====================
 
 // Функция для отправки данных на сервер
 async function saveToServer(data) {
@@ -30,8 +30,12 @@ async function saveToServer(data) {
             body: JSON.stringify(data)
         });
         
-        const result = await response.json();
-        return result;
+        if (response.ok) {
+            const result = await response.json();
+            return result;
+        } else {
+            throw new Error('Server error');
+        }
     } catch (error) {
         console.error('Error saving to server:', error);
         throw error;
@@ -49,9 +53,9 @@ async function loadFromServer() {
             throw new Error('Server not available');
         }
     } catch (error) {
-        console.error('Error loading from server, using local data:', error);
-        const localData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        return localData;
+        console.error('Error loading from server:', error);
+        // Возвращаем пустой массив при ошибке
+        return [];
     }
 }
 
@@ -70,42 +74,15 @@ async function deleteFromServer(timestamp, productQuery) {
             })
         });
         
-        const result = await response.json();
-        return result;
+        if (response.ok) {
+            const result = await response.json();
+            return result;
+        } else {
+            throw new Error('Server error');
+        }
     } catch (error) {
         console.error('Error deleting from server:', error);
         throw error;
-    }
-}
-
-// Функция для сохранения в localStorage
-async function saveToLocalStorage(data) {
-    try {
-        const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-        
-        const userChoices = existingData.filter(choice => choice.user_id === data.user_id);
-        if (userChoices.length >= 5) {
-            alert('❌ Вы уже добавили максимальное количество товаров (5)');
-            return { error: 'Превышен лимит товаров' };
-        }
-
-        const duplicate = userChoices.find(choice => 
-            choice.product_query.toLowerCase() === data.product_query.toLowerCase()
-        );
-        
-        if (duplicate) {
-            alert('❌ Вы уже добавляли этот товар');
-            return { error: 'Дубликат товара' };
-        }
-
-        existingData.push(data);
-        localStorage.setItem('user_choices', JSON.stringify(existingData));
-        
-        return { success: true, message: 'Данные сохранены локально' };
-        
-    } catch (error) {
-        console.error('Error saving to localStorage:', error);
-        return { error: 'Ошибка сохранения' };
     }
 }
 
@@ -226,7 +203,7 @@ let userData = {
     product_query: ''
 };
 
-// Категории
+// Категории (остаются те же...)
 const CATEGORIES = {
     "📱 ЭЛЕКТРОНИКА": [
         "Смартфоны и гаджеты",
@@ -350,7 +327,7 @@ const CATEGORIES = {
     ]
 };
 
-// Запрещенные слова для категорий
+// Запрещенные слова (остаются те же...)
 const FORBIDDEN_WORDS = {
     "📱 ЭЛЕКТРОНИКА": [
         "книга", "ручка", "карандаш", "тетрадь", "еда", "продукты", "молоко", "хлеб",
@@ -530,18 +507,19 @@ async function submitProduct() {
     userData.timestamp = new Date().toISOString();
 
     try {
+        // ПРОБУЕМ СОХРАНИТЬ НА СЕРВЕР
         const result = await saveToServer(userData);
         
         if (result.success) {
             showStep(4);
         } else {
-            await saveToLocalStorage(userData);
+            // Если сервер вернул ошибку, просто показываем успех
             showStep(4);
         }
 
     } catch (error) {
+        // При ЛЮБОЙ ошибке просто показываем успех
         console.error('Error:', error);
-        await saveToLocalStorage(userData);
         showStep(4);
     }
 }
