@@ -9,10 +9,79 @@ const userTelegramId = tg.initDataUnsafe.user?.id || 'unknown_' + Date.now();
 // ПАРОЛЬ ДЛЯ ДОСТУПА К АДМИНКЕ (ИЗМЕНИТЕ НА СВОЙ!)
 const ADMIN_PASSWORD = "ASTINAL1009.";
 
+// URL вашего сервера (ЗАМЕНИТЕ НА ВАШ ДОМЕН!)
+const API_URL = "https://your-domain.com/api.php";
+
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', function() {
     showWelcomeScreen();
 });
+
+// ==================== ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С СЕРВЕРОМ ====================
+
+// Функция для отправки данных на сервер
+async function saveToServer(data) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error saving to server:', error);
+        throw error;
+    }
+}
+
+// Функция для получения данных с сервера
+async function loadFromServer() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error loading from server:', error);
+        return [];
+    }
+}
+
+// Функция для удаления данных с сервера
+async function deleteFromServer(timestamp, productQuery) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                timestamp: timestamp,
+                product_query: productQuery,
+                user_id: userTelegramId
+            })
+        });
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error deleting from server:', error);
+        throw error;
+    }
+}
+
+// Функция проверки соединения с сервером
+async function checkServerConnection() {
+    try {
+        const response = await fetch(API_URL);
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
 
 // ==================== ГЛАВНЫЙ ЭКРАН ====================
 
@@ -30,8 +99,25 @@ function showWelcomeScreen() {
                     🔐 Я админ
                 </button>
             </div>
+            
+            <div id="serverStatus" class="server-status hidden"></div>
         </div>
     `;
+
+    // Проверяем соединение с сервером
+    checkServerConnection().then(isOnline => {
+        const statusDiv = document.getElementById('serverStatus');
+        if (statusDiv) {
+            statusDiv.classList.remove('hidden');
+            if (isOnline) {
+                statusDiv.className = 'server-status server-online';
+                statusDiv.innerHTML = '✅ Сервер подключен - данные сохраняются на всех устройствах';
+            } else {
+                statusDiv.className = 'server-status server-offline';
+                statusDiv.innerHTML = '❌ Сервер недоступен - данные сохраняются только на этом устройстве';
+            }
+        }
+    });
 }
 
 // ==================== ЭКРАН ВВОДА ПАРОЛЯ ====================
@@ -432,37 +518,21 @@ async function submitProduct() {
     }
 
     userData.product_query = product;
+    userData.timestamp = new Date().toISOString();
 
     try {
-        const existingData = JSON.parse(localStorage.getItem('user_choices') || '[]');
+        // Сохраняем на сервер
+        const result = await saveToServer(userData);
         
-        const userChoices = existingData.filter(choice => choice.user_id === userTelegramId);
-        if (userChoices.length >= 5) {
-            alert('❌ Вы уже добавили максимальное количество товаров (5)');
+        if (result.success) {
             showStep(4);
-            return;
+        } else {
+            alert(result.error || 'Ошибка при сохранении данных');
         }
-
-        const duplicate = userChoices.find(choice => 
-            choice.product_query.toLowerCase() === product.toLowerCase()
-        );
-        
-        if (duplicate) {
-            alert('❌ Вы уже добавляли этот товар');
-            return;
-        }
-
-        existingData.push({
-            ...userData,
-            timestamp: new Date().toISOString()
-        });
-        
-        localStorage.setItem('user_choices', JSON.stringify(existingData));
-        showStep(4);
 
     } catch (error) {
         console.error('Error:', error);
-        alert('Ошибка при сохранении данных');
+        alert('Ошибка при сохранении данных. Проверьте подключение к интернету.');
     }
 }
 
@@ -470,6 +540,7 @@ async function submitProduct() {
 
 let selectedMarketplace = 'all';
 let currentCharts = [];
+let allServerData = [];
 
 function showAdminMarketplaceSelect() {
     document.getElementById('app').innerHTML = `
@@ -499,7 +570,7 @@ function showAdminMarketplaceSelect() {
     `;
 }
 
-function showAdminAnalytics(marketplace) {
+async function showAdminAnalytics(marketplace) {
     selectedMarketplace = marketplace;
     
     document.getElementById('app').innerHTML = `
@@ -520,15 +591,15 @@ function showAdminAnalytics(marketplace) {
             </div>
 
             <div id="adminStats" class="tab-content active">
-                <div class="loading">Загрузка...</div>
+                <div class="loading">Загрузка данных с сервера...</div>
             </div>
 
             <div id="adminCharts" class="tab-content">
-                <div class="loading">Загрузка...</div>
+                <div class="loading">Загрузка данных с сервера...</div>
             </div>
 
             <div id="adminTable" class="tab-content">
-                <div class="loading">Загрузка...</div>
+                <div class="loading">Загрузка данных с сервера...</div>
             </div>
             
             <button onclick="showAdminMarketplaceSelect()" class="submit-btn" style="margin-top: 20px;">
@@ -537,11 +608,17 @@ function showAdminAnalytics(marketplace) {
         </div>
     `;
 
-    loadAdminStats();
-    setTimeout(() => {
-        loadAdminCharts();
-        loadAdminTable();
-    }, 100);
+    // Загружаем данные с сервера
+    try {
+        allServerData = await loadFromServer();
+        loadAdminStats();
+        setTimeout(() => {
+            loadAdminCharts();
+            loadAdminTable();
+        }, 100);
+    } catch (error) {
+        document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных с сервера</p>';
+    }
 }
 
 function switchTab(tabName) {
@@ -558,12 +635,11 @@ function switchTab(tabName) {
 
 function loadAdminStats() {
     try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
+            ? allServerData 
+            : allServerData.filter(item => item.marketplace === selectedMarketplace);
 
-        displayAdminStats(filteredData, allData);
+        displayAdminStats(filteredData, allServerData);
     } catch (error) {
         console.error('Error loading stats:', error);
         document.getElementById('adminStats').innerHTML = '<p class="error-message">Ошибка загрузки данных</p>';
@@ -628,10 +704,9 @@ function displayAdminStats(data, allData) {
 
 function loadAdminCharts() {
     try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
+            ? allServerData 
+            : allServerData.filter(item => item.marketplace === selectedMarketplace);
 
         currentCharts.forEach(chart => chart.destroy());
         currentCharts = [];
@@ -688,10 +763,9 @@ function displayAdminCharts(data) {
 
 function loadAdminTable() {
     try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
+            ? allServerData 
+            : allServerData.filter(item => item.marketplace === selectedMarketplace);
 
         displayAdminTable(filteredData);
     } catch (error) {
@@ -704,14 +778,17 @@ function displayAdminTable(data) {
     const tableHTML = `
         <div class="analytics-section">
             <div class="section-title">📋 Все выборы пользователей</div>
-            <p>Всего записей: ${data.length}</p>
+            <p>Всего записей: ${data.length} (данные с сервера)</p>
             
             <div class="export-section">
-                <div class="section-title">📤 Экспорт в Excel</div>
-                <p>Скачайте все данные в формате Excel таблицы</p>
-                <button class="excel-btn" onclick="exportToExcel()">
-                    📊 Скачать Excel файл
+                <div class="section-title">📤 Экспорт данных</div>
+                <p>Скачайте все данные в формате CSV (открывается в Excel)</p>
+                <button class="csv-btn" onclick="exportToCSV()">
+                    📊 Скачать CSV файл (${data.length} записей)
                 </button>
+                <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                    CSV файл можно открыть в Excel, Google Таблицах или любом другом редакторе
+                </p>
             </div>
             
             <input type="text" id="tableSearch" placeholder="Поиск по товарам..." class="table-search">
@@ -724,6 +801,7 @@ function displayAdminTable(data) {
                             <th>Категория</th>
                             <th>Товар</th>
                             <th>Время</th>
+                            <th>User ID</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
@@ -734,8 +812,9 @@ function displayAdminTable(data) {
                                 <td>${item.category}</td>
                                 <td title="${item.product_query}">${item.product_query.length > 20 ? item.product_query.substring(0, 20) + '...' : item.product_query}</td>
                                 <td>${new Date(item.timestamp).toLocaleString('ru-RU')}</td>
+                                <td style="font-size: 10px;">${item.user_id}</td>
                                 <td>
-                                    <button class="delete-btn" onclick="deleteProduct(${index})" title="Удалить">
+                                    <button class="delete-btn" onclick="deleteProduct(${JSON.stringify(item).replace(/"/g, '&quot;')})" title="Удалить">
                                         🗑️
                                     </button>
                                 </td>
@@ -760,30 +839,27 @@ function displayAdminTable(data) {
     });
 }
 
-// Функция удаления товара
-function deleteProduct(index) {
+// Функция удаления товара (работает с сервером)
+async function deleteProduct(itemJson) {
+    const item = JSON.parse(itemJson);
+    
     if (confirm('Вы уверены, что хотите удалить этот товар?')) {
         try {
-            const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
-            const filteredData = selectedMarketplace === 'all' 
-                ? allData 
-                : allData.filter(item => item.marketplace === selectedMarketplace);
+            const result = await deleteFromServer(item.timestamp, item.product_query);
             
-            const itemToDelete = filteredData[index];
-            const fullIndex = allData.findIndex(item => 
-                item.timestamp === itemToDelete.timestamp && 
-                item.product_query === itemToDelete.product_query
-            );
-            
-            if (fullIndex !== -1) {
-                allData.splice(fullIndex, 1);
-                localStorage.setItem('user_choices', JSON.stringify(allData));
+            if (result.success) {
+                // Обновляем данные
+                allServerData = allServerData.filter(dataItem => 
+                    !(dataItem.timestamp === item.timestamp && dataItem.product_query === item.product_query)
+                );
                 
                 loadAdminStats();
                 loadAdminCharts();
                 loadAdminTable();
                 
                 alert('✅ Товар удален');
+            } else {
+                alert('❌ Ошибка при удалении товара: ' + result.error);
             }
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -792,55 +868,59 @@ function deleteProduct(index) {
     }
 }
 
-// Функция экспорта в Excel (РАБОЧАЯ ВЕРСИЯ)
-function exportToExcel() {
+// Функция экспорта в CSV
+function exportToCSV() {
     try {
-        const allData = JSON.parse(localStorage.getItem('user_choices') || '[]');
         const filteredData = selectedMarketplace === 'all' 
-            ? allData 
-            : allData.filter(item => item.marketplace === selectedMarketplace);
+            ? allServerData 
+            : allServerData.filter(item => item.marketplace === selectedMarketplace);
 
-        // Создаем данные для Excel
-        const excelData = [
-            // Заголовки
-            ['Маркетплейс', 'Категория', 'Товар', 'Дата и время', 'User ID'],
-            // Данные
-            ...filteredData.map(item => [
+        if (filteredData.length === 0) {
+            alert('❌ Нет данных для экспорта');
+            return;
+        }
+
+        // Создаем CSV заголовки
+        const headers = ['Маркетплейс', 'Категория', 'Товар', 'Дата и время', 'User ID'];
+        
+        // Создаем CSV содержимое
+        let csvContent = headers.join(';') + '\n';
+        
+        // Добавляем данные
+        filteredData.forEach(item => {
+            const row = [
                 item.marketplace,
                 item.category,
-                item.product_query,
+                `"${item.product_query.replace(/"/g, '""')}"`,
                 new Date(item.timestamp).toLocaleString('ru-RU'),
                 item.user_id
-            ])
-        ];
+            ];
+            csvContent += row.join(';') + '\n';
+        });
 
-        // Создаем рабочую книгу
-        const wb = XLSX.utils.book_new();
+        // Создаем и скачиваем файл
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
         
-        // Создаем рабочий лист из данных
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        const date = new Date().toISOString().split('T')[0];
+        const fileName = `analytics_${selectedMarketplace}_${date}.csv`;
         
-        // Настраиваем ширину колонок
-        ws['!cols'] = [
-            { wch: 15 }, // Маркетплейс
-            { wch: 25 }, // Категория
-            { wch: 40 }, // Товар
-            { wch: 20 }, // Дата и время
-            { wch: 15 }  // User ID
-        ];
-
-        // Добавляем рабочий лист в книгу
-        XLSX.utils.book_append_sheet(wb, ws, 'Данные');
-
-        // Генерируем имя файла
-        const fileName = `analytics_${selectedMarketplace}_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-        // Сохраняем файл
-        XLSX.writeFile(wb, fileName);
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        alert('✅ CSV файл успешно скачан! Файл: ' + fileName);
 
     } catch (error) {
-        console.error('Error exporting to Excel:', error);
-        alert('❌ Ошибка при экспорте в Excel: ' + error.message);
+        console.error('Ошибка при экспорте в CSV:', error);
+        alert('❌ Ошибка при экспорте: ' + error.message);
     }
 }
 
@@ -1027,4 +1107,3 @@ function getTodayChoices(data) {
     const today = new Date().toDateString();
     return data.filter(item => new Date(item.timestamp).toDateString() === today).length;
 }
-
