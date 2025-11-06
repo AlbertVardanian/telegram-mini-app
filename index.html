@@ -427,6 +427,8 @@
             overflow: hidden;
             margin: 16px 0;
             border: 1px solid var(--border);
+            max-height: 300px;
+            overflow-y: auto;
         }
         
         .table {
@@ -441,6 +443,8 @@
             text-align: left;
             font-weight: 600;
             font-size: 14px;
+            position: sticky;
+            top: 0;
         }
         
         .table td {
@@ -482,6 +486,7 @@
             border-radius: 12px;
             padding: 4px;
             margin-bottom: 20px;
+            overflow-x: auto;
         }
         
         .tab {
@@ -495,6 +500,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             color: var(--text-light);
+            white-space: nowrap;
+            min-width: 80px;
         }
         
         .tab.active {
@@ -512,21 +519,21 @@
             animation: fadeIn 0.3s ease;
         }
         
-        /* Progress Bar */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 8px 0;
+        /* Delete button in tables */
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
         }
         
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
-            transition: width 0.3s ease;
+        .delete-btn:hover {
+            background: var(--danger);
+            color: white;
         }
     </style>
 </head>
@@ -649,6 +656,7 @@
                 <button class="tab active" onclick="switchTab('overview')">Обзор</button>
                 <button class="tab" onclick="switchTab('categories')">Категории</button>
                 <button class="tab" onclick="switchTab('prices')">Цены</button>
+                <button class="tab" onclick="switchTab('products')">Все товары</button>
             </div>
             
             <!-- Вкладка Обзор -->
@@ -705,6 +713,7 @@
                                     <th>Товар</th>
                                     <th>Цена</th>
                                     <th>Категория</th>
+                                    <th>Действия</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -794,8 +803,34 @@
                 </div>
             </div>
 
+            <!-- Вкладка Все товары -->
+            <div id="productsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-boxes"></i>
+                        <h2>Все товары</h2>
+                    </div>
+                    <div class="table-container" style="max-height: 500px;">
+                        <table class="table" id="allProductsTable">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Цена</th>
+                                    <th>Категория</th>
+                                    <th>Дата</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные будут загружены здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <div style="display: flex; gap: 12px;">
                     <button class="btn btn-secondary" onclick="exportToCSV()" style="flex: 1;">
                         <i class="fas fa-file-export"></i>
                         Экспорт в CSV
@@ -1166,6 +1201,15 @@
                 }
             }
 
+            deleteProductFromTable(productId) {
+                if (confirm('Удалить этот товар?')) {
+                    this.products = this.products.filter(p => p.id !== productId);
+                    this.saveProducts();
+                    this.updateRecentProducts();
+                    this.updateAnalytics();
+                }
+            }
+
             loadProducts() {
                 try {
                     const stored = localStorage.getItem('products');
@@ -1228,12 +1272,13 @@
 
             updateStats() {
                 // Обновляем статистику
-                document.getElementById('totalProducts').textContent = this.products.length;
+                const totalProducts = this.products.length;
+                document.getElementById('totalProducts').textContent = totalProducts;
                 
                 const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
                 document.getElementById('totalValue').textContent = `${totalValue.toLocaleString()}₽`;
 
-                const avgPrice = this.products.length > 0 ? Math.round(totalValue / this.products.length) : 0;
+                const avgPrice = totalProducts > 0 ? Math.round(totalValue / totalProducts) : 0;
                 document.getElementById('avgPrice').textContent = `${avgPrice.toLocaleString()}₽`;
 
                 // Находим популярную категорию
@@ -1569,6 +1614,7 @@
                 this.updateTopProductsTable();
                 this.updateCategoriesTable();
                 this.updatePriceRangesTable();
+                this.updateAllProductsTable();
             }
 
             updateTopProductsTable() {
@@ -1578,7 +1624,7 @@
                     .slice(0, 5);
 
                 if (topProducts.length === 0) {
-                    table.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+                    table.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
                     return;
                 }
 
@@ -1587,6 +1633,11 @@
                         <td>${product.name}</td>
                         <td class="number">${product.price.toLocaleString()}₽</td>
                         <td>${product.category}</td>
+                        <td>
+                            <button class="delete-btn" onclick="productManager.deleteProductFromTable(${product.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -1661,6 +1712,30 @@
                         </tr>
                     `;
                 }).join('');
+            }
+
+            updateAllProductsTable() {
+                const table = document.getElementById('allProductsTable').querySelector('tbody');
+                const sortedProducts = [...this.products].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (sortedProducts.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = sortedProducts.map(product => `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td class="number">${product.price.toLocaleString()}₽</td>
+                        <td>${product.category}</td>
+                        <td>${new Date(product.date).toLocaleDateString('ru-RU')}</td>
+                        <td>
+                            <button class="delete-btn" onclick="productManager.deleteProductFromTable(${product.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
             }
 
             exportToCSV() {
