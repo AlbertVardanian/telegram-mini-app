@@ -1,15 +1,41 @@
+# Включение перенаправления
 RewriteEngine On
 
-# CORS headers
-Header always set Access-Control-Allow-Origin "*"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-Header always set Access-Control-Allow-Credentials "true"
+# Перенаправление на index.html для всех запросов (для SPA)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
 
-# Handle OPTIONS method
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
+# Кэширование статических файлов
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+</IfModule>
 
-# Security headers
-Header always set X-Content-Type-Options "nosniff"
-Header always set X-Frame-Options "SAMEORIGIN"
+# Сжатие файлов
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Безопасность
+<IfModule mod_headers.c>
+    # Защита от XSS
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Запрет фреймов
+    Header set X-Frame-Options "DENY"
+    
+    # Запрет MIME-sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # CSP политика
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;"
+</IfModule>
