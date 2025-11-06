@@ -29,7 +29,7 @@ const CATEGORIES = {
         "Женская одежда", 
         "Детская одежда",
         "Обувь",
-        "Аксессуары",
+        "Аксесссуары",
         "Спортивная одежда",
         "Нижнее белье"
     ],
@@ -108,7 +108,7 @@ const CATEGORIES = {
     
     "🐾 ЗООТОВАРЫ": [
         "Корм для животных",
-        "Аксессуары для животных",
+        "Аксесссуары для животных",
         "Игрушки для питомцев",
         "Ветеринарные товары",
         "Уход и гигиена",
@@ -240,6 +240,11 @@ class ProductManager {
         this.products = this.loadProducts();
         this.charts = {};
         this.init();
+        
+        // Инициализируем аналитику при загрузке
+        setTimeout(() => {
+            this.updateAnalytics();
+        }, 100);
     }
 
     init() {
@@ -248,21 +253,30 @@ class ProductManager {
         this.updateRecentProducts();
         
         // Автоопределение категории при вводе названия
-        document.getElementById('productName').addEventListener('input', (e) => {
-            this.updateCategoryPreview(e.target.value);
-        });
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput) {
+            productNameInput.addEventListener('input', (e) => {
+                this.updateCategoryPreview(e.target.value);
+            });
+        }
 
         // Обновление предпросмотра при изменении категории
-        document.getElementById('productCategory').addEventListener('change', (e) => {
-            this.updateCategoryPreview(document.getElementById('productName').value);
-        });
+        const categorySelect = document.getElementById('productCategory');
+        if (categorySelect) {
+            categorySelect.addEventListener('change', (e) => {
+                this.updateCategoryPreview(document.getElementById('productName').value);
+            });
+        }
     }
 
     setupEventListeners() {
-        document.getElementById('addProductForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addProduct();
-        });
+        const addProductForm = document.getElementById('addProductForm');
+        if (addProductForm) {
+            addProductForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addProduct();
+            });
+        }
     }
 
     // Автоматическое определение категории по названию
@@ -283,6 +297,8 @@ class ProductManager {
         const categorySelect = document.getElementById('productCategory');
         const preview = document.getElementById('autoDetectionPreview');
         const detectedCategorySpan = document.getElementById('detectedCategory');
+        
+        if (!categorySelect || !preview || !detectedCategorySpan) return;
         
         if (productName.trim() === '') {
             preview.classList.add('hidden');
@@ -354,15 +370,6 @@ class ProductManager {
         }
     }
 
-    deleteProductFromTable(productId) {
-        if (confirm('Удалить этот товар?')) {
-            this.products = this.products.filter(p => p.id !== productId);
-            this.saveProducts();
-            this.updateRecentProducts();
-            this.updateAnalytics();
-        }
-    }
-
     loadProducts() {
         try {
             const stored = localStorage.getItem('products');
@@ -384,6 +391,8 @@ class ProductManager {
 
     updateRecentProducts() {
         const container = document.getElementById('recentProducts');
+        if (!container) return;
+        
         const recentProducts = this.products.slice(-5).reverse();
         
         if (recentProducts.length === 0) {
@@ -398,7 +407,7 @@ class ProductManager {
 
         container.innerHTML = recentProducts.map(product => `
             <div class="product-item">
-                <div class="product-name">${product.name}</div>
+                <div class="product-name">${this.escapeHtml(product.name)}</div>
                 <div class="product-meta">
                     <span>${new Date(product.date).toLocaleDateString('ru-RU')}</span>
                     <span class="product-price">${product.price.toLocaleString()}₽</span>
@@ -406,7 +415,7 @@ class ProductManager {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
                     <div class="category-tag">
                         <i class="fas fa-tag"></i>
-                        ${product.category}
+                        ${this.escapeHtml(product.category)}
                     </div>
                     <button class="action-btn delete" onclick="productManager.deleteProduct(${product.id})">
                         <i class="fas fa-trash"></i>
@@ -418,6 +427,10 @@ class ProductManager {
     }
 
     updateAnalytics() {
+        if (document.getElementById('analyticsScreen').classList.contains('hidden')) {
+            return; // Не обновляем аналитику если экран скрыт
+        }
+        
         this.updateStats();
         this.renderCharts();
         this.updateTables();
@@ -426,13 +439,16 @@ class ProductManager {
     updateStats() {
         // Обновляем статистику
         const totalProducts = this.products.length;
-        document.getElementById('totalProducts').textContent = totalProducts;
+        const totalProductsEl = document.getElementById('totalProducts');
+        if (totalProductsEl) totalProductsEl.textContent = totalProducts;
         
         const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
-        document.getElementById('totalValue').textContent = `${totalValue.toLocaleString()}₽`;
+        const totalValueEl = document.getElementById('totalValue');
+        if (totalValueEl) totalValueEl.textContent = `${totalValue.toLocaleString()}₽`;
 
         const avgPrice = totalProducts > 0 ? Math.round(totalValue / totalProducts) : 0;
-        document.getElementById('avgPrice').textContent = `${avgPrice.toLocaleString()}₽`;
+        const avgPriceEl = document.getElementById('avgPrice');
+        if (avgPriceEl) avgPriceEl.textContent = `${avgPrice.toLocaleString()}₽`;
 
         // Находим популярную категорию
         const categoryCount = {};
@@ -444,20 +460,36 @@ class ProductManager {
             ? Object.keys(categoryCount).reduce((a, b) => 
                 categoryCount[a] > categoryCount[b] ? a : b)
             : 'Нет данных';
-        document.getElementById('topCategory').textContent = topCategory;
+        const topCategoryEl = document.getElementById('topCategory');
+        if (topCategoryEl) topCategoryEl.textContent = topCategory;
     }
 
     renderCharts() {
-        this.renderCategoryChart();
-        this.renderTimelineChart();
-        this.renderCategoryBarChart();
-        this.renderPriceByCategoryChart();
-        this.renderPriceDistributionChart();
-        this.renderMonthlyTrendChart();
+        if (document.getElementById('categoryChart')) {
+            this.renderCategoryChart();
+        }
+        if (document.getElementById('timelineChart')) {
+            this.renderTimelineChart();
+        }
+        if (document.getElementById('categoryBarChart')) {
+            this.renderCategoryBarChart();
+        }
+        if (document.getElementById('priceByCategoryChart')) {
+            this.renderPriceByCategoryChart();
+        }
+        if (document.getElementById('priceDistributionChart')) {
+            this.renderPriceDistributionChart();
+        }
+        if (document.getElementById('monthlyTrendChart')) {
+            this.renderMonthlyTrendChart();
+        }
     }
 
     renderCategoryChart() {
-        const ctx = document.getElementById('categoryChart').getContext('2d');
+        const canvas = document.getElementById('categoryChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         // Группируем по категориям
         const categoryData = {};
@@ -512,7 +544,10 @@ class ProductManager {
     }
 
     renderTimelineChart() {
-        const ctx = document.getElementById('timelineChart').getContext('2d');
+        const canvas = document.getElementById('timelineChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         // Группируем по датам
         const timelineData = {};
@@ -563,7 +598,10 @@ class ProductManager {
     }
 
     renderCategoryBarChart() {
-        const ctx = document.getElementById('categoryBarChart').getContext('2d');
+        const canvas = document.getElementById('categoryBarChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         const categoryStats = {};
         this.products.forEach(product => {
@@ -611,7 +649,10 @@ class ProductManager {
     }
 
     renderPriceByCategoryChart() {
-        const ctx = document.getElementById('priceByCategoryChart').getContext('2d');
+        const canvas = document.getElementById('priceByCategoryChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         const categoryStats = {};
         this.products.forEach(product => {
@@ -661,7 +702,10 @@ class ProductManager {
     }
 
     renderPriceDistributionChart() {
-        const ctx = document.getElementById('priceDistributionChart').getContext('2d');
+        const canvas = document.getElementById('priceDistributionChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         const prices = this.products.map(p => p.price).sort((a, b) => a - b);
         const priceRanges = {
@@ -708,7 +752,10 @@ class ProductManager {
     }
 
     renderMonthlyTrendChart() {
-        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+        const canvas = document.getElementById('monthlyTrendChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         const monthlyData = {};
         this.products.forEach(product => {
@@ -756,38 +803,53 @@ class ProductManager {
     }
 
     showNoDataMessage(canvasId) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        ctx.font = '16px Segoe UI';
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем canvas
+        ctx.font = '14px Segoe UI';
         ctx.fillStyle = '#64748B';
         ctx.textAlign = 'center';
-        ctx.fillText('Нет данных для отображения', 210, 110);
+        ctx.fillText('Нет данных для отображения', canvas.width / 2, canvas.height / 2);
     }
 
     updateTables() {
-        this.updateTopProductsTable();
-        this.updateCategoriesTable();
-        this.updatePriceRangesTable();
-        this.updateAllProductsTable();
+        if (document.getElementById('topProductsTable')) {
+            this.updateTopProductsTable();
+        }
+        if (document.getElementById('categoriesTable')) {
+            this.updateCategoriesTable();
+        }
+        if (document.getElementById('priceRangesTable')) {
+            this.updatePriceRangesTable();
+        }
+        if (document.getElementById('allProductsTable')) {
+            this.updateAllProductsTable();
+        }
     }
 
     updateTopProductsTable() {
-        const table = document.getElementById('topProductsTable').querySelector('tbody');
+        const table = document.getElementById('topProductsTable');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
         const topProducts = [...this.products]
             .sort((a, b) => b.price - a.price)
             .slice(0, 5);
 
         if (topProducts.length === 0) {
-            table.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
             return;
         }
 
-        table.innerHTML = topProducts.map(product => `
+        tbody.innerHTML = topProducts.map(product => `
             <tr>
-                <td>${product.name}</td>
+                <td>${this.escapeHtml(product.name)}</td>
                 <td class="number">${product.price.toLocaleString()}₽</td>
-                <td>${product.category}</td>
+                <td>${this.escapeHtml(product.category)}</td>
                 <td>
-                    <button class="delete-btn" onclick="productManager.deleteProductFromTable(${product.id})">
+                    <button class="delete-btn" onclick="productManager.deleteProduct(${product.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -796,7 +858,10 @@ class ProductManager {
     }
 
     updateCategoriesTable() {
-        const table = document.getElementById('categoriesTable').querySelector('tbody');
+        const table = document.getElementById('categoriesTable');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
         const categoryStats = {};
         
         this.products.forEach(product => {
@@ -810,16 +875,16 @@ class ProductManager {
         const categories = Object.keys(categoryStats);
 
         if (categories.length === 0) {
-            table.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
             return;
         }
 
-        table.innerHTML = categories.map(category => {
+        tbody.innerHTML = categories.map(category => {
             const stats = categoryStats[category];
             const avgPrice = Math.round(stats.total / stats.count);
             return `
                 <tr>
-                    <td>${category}</td>
+                    <td>${this.escapeHtml(category)}</td>
                     <td class="number">${stats.count}</td>
                     <td class="number">${stats.total.toLocaleString()}₽</td>
                     <td class="number">${avgPrice.toLocaleString()}₽</td>
@@ -829,7 +894,10 @@ class ProductManager {
     }
 
     updatePriceRangesTable() {
-        const table = document.getElementById('priceRangesTable').querySelector('tbody');
+        const table = document.getElementById('priceRangesTable');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
         const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
         
         const priceRanges = {
@@ -851,11 +919,11 @@ class ProductManager {
         });
 
         if (this.products.length === 0) {
-            table.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
             return;
         }
 
-        table.innerHTML = Object.entries(priceRanges).map(([range, data]) => {
+        tbody.innerHTML = Object.entries(priceRanges).map(([range, data]) => {
             const percentage = totalValue > 0 ? ((data.total / totalValue) * 100).toFixed(1) : 0;
             return `
                 <tr>
@@ -868,27 +936,39 @@ class ProductManager {
     }
 
     updateAllProductsTable() {
-        const table = document.getElementById('allProductsTable').querySelector('tbody');
+        const table = document.getElementById('allProductsTable');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
         const sortedProducts = [...this.products].sort((a, b) => new Date(b.date) - new Date(a.date));
 
         if (sortedProducts.length === 0) {
-            table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
             return;
         }
 
-        table.innerHTML = sortedProducts.map(product => `
+        tbody.innerHTML = sortedProducts.map(product => `
             <tr>
-                <td>${product.name}</td>
+                <td>${this.escapeHtml(product.name)}</td>
                 <td class="number">${product.price.toLocaleString()}₽</td>
-                <td>${product.category}</td>
+                <td>${this.escapeHtml(product.category)}</td>
                 <td>${new Date(product.date).toLocaleDateString('ru-RU')}</td>
                 <td>
-                    <button class="delete-btn" onclick="productManager.deleteProductFromTable(${product.id})">
+                    <button class="delete-btn" onclick="productManager.deleteProduct(${product.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
         `).join('');
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     exportToCSV() {
@@ -901,7 +981,7 @@ class ProductManager {
         const csvData = [
             headers.join(','),
             ...this.products.map(product => [
-                `"${product.name}"`,
+                `"${product.name.replace(/"/g, '""')}"`,
                 product.price,
                 `"${product.category}"`,
                 `"${new Date(product.date).toLocaleDateString('ru-RU')}"`,
@@ -947,13 +1027,16 @@ function showAddProductScreen() {
     document.getElementById('analyticsScreen').classList.add('hidden');
     
     // Скрываем сообщение об успехе при переходе
-    document.getElementById('successMessage').classList.add('hidden');
+    const successMessage = document.getElementById('successMessage');
+    if (successMessage) successMessage.classList.add('hidden');
     
     // Сбрасываем форму
-    document.getElementById('addProductForm').reset();
+    const addProductForm = document.getElementById('addProductForm');
+    if (addProductForm) addProductForm.reset();
     
     // Очищаем предпросмотр категории
-    document.getElementById('autoDetectionPreview').classList.add('hidden');
+    const preview = document.getElementById('autoDetectionPreview');
+    if (preview) preview.classList.add('hidden');
 }
 
 function showAnalyticsScreen() {
@@ -961,7 +1044,10 @@ function showAnalyticsScreen() {
     document.getElementById('addProductScreen').classList.add('hidden');
     document.getElementById('analyticsScreen').classList.remove('hidden');
     
-    productManager.updateAnalytics();
+    // Принудительно обновляем аналитику при открытии экрана
+    setTimeout(() => {
+        productManager.updateAnalytics();
+    }, 100);
 }
 
 function switchTab(tabName) {
@@ -970,8 +1056,16 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
     // Добавляем активный класс выбранной вкладке и контенту
-    document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
-    document.getElementById(`${tabName}Tab`).classList.add('active');
+    const tabElement = document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`);
+    const contentElement = document.getElementById(`${tabName}Tab`);
+    
+    if (tabElement) tabElement.classList.add('active');
+    if (contentElement) contentElement.classList.add('active');
+    
+    // Обновляем аналитику при переключении вкладок
+    setTimeout(() => {
+        productManager.updateAnalytics();
+    }, 50);
 }
 
 function exportToCSV() {
