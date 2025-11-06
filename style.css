@@ -513,3 +513,9 @@ body {
     background: var(--danger);
     color: white;
 }
+
+/* Center text in tables */
+.table td[colspan] {
+    text-align: center !important;
+    padding: 40px 20px;
+}
