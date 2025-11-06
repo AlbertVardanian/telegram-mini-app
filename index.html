@@ -21,6 +21,7 @@
             --success: #10B981;
             --danger: #EF4444;
             --warning: #F59E0B;
+            --info: #06B6D4;
             --background: #F8FAFC;
             --surface: #FFFFFF;
             --text: #1E293B;
@@ -221,6 +222,11 @@
             position: relative;
         }
         
+        .chart-small {
+            height: 180px;
+            margin: 16px 0;
+        }
+        
         /* Product Items */
         .products-list {
             max-height: 400px;
@@ -404,7 +410,7 @@
         .section-header {
             display: flex;
             align-items: center;
-            justify-content: between;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
         
@@ -412,6 +418,49 @@
             font-size: 18px;
             font-weight: 600;
             color: var(--text);
+        }
+        
+        /* Tables */
+        .table-container {
+            background: var(--background);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0;
+            border: 1px solid var(--border);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .table .number {
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
         }
         
         /* Badge */
@@ -424,6 +473,60 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+        }
+        
+        /* Analytics Tabs */
+        .tabs {
+            display: flex;
+            background: var(--background);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -541,46 +644,157 @@
                 <h1>📈 Аналитика товаров</h1>
                 <p>Статистика и визуализация ваших данных</p>
             </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">Обзор</button>
+                <button class="tab" onclick="switchTab('categories')">Категории</button>
+                <button class="tab" onclick="switchTab('prices')">Цены</button>
+            </div>
             
+            <!-- Вкладка Обзор -->
+            <div id="overviewTab" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie"></i>
+                        <h2>Общая статистика</h2>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalProducts">0</div>
+                            <div class="stat-label">Всего товаров</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalValue">0₽</div>
+                            <div class="stat-label">Общая стоимость</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgPrice">0₽</div>
+                            <div class="stat-label">Средняя цена</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="topCategory">-</div>
+                            <div class="stat-label">Популярная категория</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-header">
+                        <h3 class="section-title">Распределение по категориям</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    
+                    <div class="section-header">
+                        <h3 class="section-title">Динамика добавления товаров</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-table"></i>
+                        <h2>Топ товаров по цене</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="topProductsTable">
+                            <thead>
+                                <tr>
+                                    <th>Товар</th>
+                                    <th>Цена</th>
+                                    <th>Категория</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные будут загружены здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка Категории -->
+            <div id="categoriesTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h2>Статистика по категориям</h2>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-small">
+                        <canvas id="priceByCategoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list"></i>
+                        <h2>Детали по категориям</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="categoriesTable">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Товары</th>
+                                    <th>Стоимость</th>
+                                    <th>Средняя цена</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные будут загружены здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка Цены -->
+            <div id="pricesTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h2>Анализ цен</h2>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="priceDistributionChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-small">
+                        <canvas id="monthlyTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-percentage"></i>
+                        <h2>Распределение цен</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="priceRangesTable">
+                            <thead>
+                                <tr>
+                                    <th>Диапазон цен</th>
+                                    <th>Кол-во товаров</th>
+                                    <th>% от общей стоимости</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные будут загружены здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-chart-pie"></i>
-                    <h2>Общая статистика</h2>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalProducts">0</div>
-                        <div class="stat-label">Всего товаров</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalValue">0₽</div>
-                        <div class="stat-label">Общая стоимость</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="avgPrice">0₽</div>
-                        <div class="stat-label">Средняя цена</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="topCategory">-</div>
-                        <div class="stat-label">Популярная категория</div>
-                    </div>
-                </div>
-                
-                <div class="section-header">
-                    <h3 class="section-title">Распределение по категориям</h3>
-                </div>
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                
-                <div class="section-header">
-                    <h3 class="section-title">Динамика цен</h3>
-                </div>
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
-                </div>
-                
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
                     <button class="btn btn-secondary" onclick="exportToCSV()" style="flex: 1;">
                         <i class="fas fa-file-export"></i>
@@ -836,8 +1050,7 @@
         class ProductManager {
             constructor() {
                 this.products = this.loadProducts();
-                this.categoryChart = null;
-                this.priceChart = null;
+                this.charts = {};
                 this.init();
             }
 
@@ -1008,6 +1221,12 @@
             }
 
             updateAnalytics() {
+                this.updateStats();
+                this.renderCharts();
+                this.updateTables();
+            }
+
+            updateStats() {
                 // Обновляем статистику
                 document.getElementById('totalProducts').textContent = this.products.length;
                 
@@ -1028,10 +1247,15 @@
                         categoryCount[a] > categoryCount[b] ? a : b)
                     : 'Нет данных';
                 document.getElementById('topCategory').textContent = topCategory;
+            }
 
-                // Строим графики
+            renderCharts() {
                 this.renderCategoryChart();
-                this.renderPriceChart();
+                this.renderTimelineChart();
+                this.renderCategoryBarChart();
+                this.renderPriceByCategoryChart();
+                this.renderPriceDistributionChart();
+                this.renderMonthlyTrendChart();
             }
 
             renderCategoryChart() {
@@ -1044,19 +1268,16 @@
                 });
 
                 // Удаляем старый график если существует
-                if (this.categoryChart) {
-                    this.categoryChart.destroy();
+                if (this.charts.categoryChart) {
+                    this.charts.categoryChart.destroy();
                 }
 
                 if (Object.keys(categoryData).length === 0) {
-                    ctx.font = '16px Segoe UI';
-                    ctx.fillStyle = '#64748B';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Нет данных для отображения', 210, 110);
+                    this.showNoDataMessage('categoryChart');
                     return;
                 }
 
-                this.categoryChart = new Chart(ctx, {
+                this.charts.categoryChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: Object.keys(categoryData),
@@ -1092,46 +1313,40 @@
                 });
             }
 
-            renderPriceChart() {
-                const ctx = document.getElementById('priceChart').getContext('2d');
+            renderTimelineChart() {
+                const ctx = document.getElementById('timelineChart').getContext('2d');
                 
-                // Сортируем по дате и берем последние 10 товаров
-                const sortedProducts = [...this.products]
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                    .slice(-10);
+                // Группируем по датам
+                const timelineData = {};
+                this.products.forEach(product => {
+                    const date = new Date(product.date).toLocaleDateString('ru-RU');
+                    timelineData[date] = (timelineData[date] || 0) + 1;
+                });
 
-                // Удаляем старый график если существует
-                if (this.priceChart) {
-                    this.priceChart.destroy();
+                const dates = Object.keys(timelineData).sort();
+                const counts = dates.map(date => timelineData[date]);
+
+                if (this.charts.timelineChart) {
+                    this.charts.timelineChart.destroy();
                 }
 
-                if (sortedProducts.length === 0) {
-                    ctx.font = '16px Segoe UI';
-                    ctx.fillStyle = '#64748B';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Нет данных для отображения', 210, 110);
+                if (dates.length === 0) {
+                    this.showNoDataMessage('timelineChart');
                     return;
                 }
 
-                this.priceChart = new Chart(ctx, {
+                this.charts.timelineChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: sortedProducts.map(p => 
-                            new Date(p.date).toLocaleDateString('ru-RU')
-                        ),
+                        labels: dates,
                         datasets: [{
-                            label: 'Цена товаров',
-                            data: sortedProducts.map(p => p.price),
-                            borderColor: '#6366F1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            label: 'Количество товаров',
+                            data: counts,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             borderWidth: 3,
                             tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#6366F1',
-                            pointBorderColor: '#FFFFFF',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8
+                            fill: true
                         }]
                     },
                     options: {
@@ -1140,38 +1355,312 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                },
                                 ticks: {
-                                    font: {
-                                        family: 'Segoe UI'
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Segoe UI'
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    font: {
-                                        family: 'Segoe UI',
-                                        size: 12
-                                    }
+                                    stepSize: 1
                                 }
                             }
                         }
                     }
                 });
+            }
+
+            renderCategoryBarChart() {
+                const ctx = document.getElementById('categoryBarChart').getContext('2d');
+                
+                const categoryStats = {};
+                this.products.forEach(product => {
+                    if (!categoryStats[product.category]) {
+                        categoryStats[product.category] = { count: 0, total: 0 };
+                    }
+                    categoryStats[product.category].count++;
+                    categoryStats[product.category].total += product.price;
+                });
+
+                const categories = Object.keys(categoryStats);
+                const counts = categories.map(cat => categoryStats[cat].count);
+
+                if (this.charts.categoryBarChart) {
+                    this.charts.categoryBarChart.destroy();
+                }
+
+                if (categories.length === 0) {
+                    this.showNoDataMessage('categoryBarChart');
+                    return;
+                }
+
+                this.charts.categoryBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            label: 'Количество товаров',
+                            data: counts,
+                            backgroundColor: '#6366F1',
+                            borderColor: '#4F46E5',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderPriceByCategoryChart() {
+                const ctx = document.getElementById('priceByCategoryChart').getContext('2d');
+                
+                const categoryStats = {};
+                this.products.forEach(product => {
+                    if (!categoryStats[product.category]) {
+                        categoryStats[product.category] = { count: 0, total: 0 };
+                    }
+                    categoryStats[product.category].count++;
+                    categoryStats[product.category].total += product.price;
+                });
+
+                const categories = Object.keys(categoryStats);
+                const avgPrices = categories.map(cat => 
+                    Math.round(categoryStats[cat].total / categoryStats[cat].count)
+                );
+
+                if (this.charts.priceByCategoryChart) {
+                    this.charts.priceByCategoryChart.destroy();
+                }
+
+                if (categories.length === 0) {
+                    this.showNoDataMessage('priceByCategoryChart');
+                    return;
+                }
+
+                this.charts.priceByCategoryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            label: 'Средняя цена',
+                            data: avgPrices,
+                            backgroundColor: '#F59E0B',
+                            borderColor: '#D97706',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderPriceDistributionChart() {
+                const ctx = document.getElementById('priceDistributionChart').getContext('2d');
+                
+                const prices = this.products.map(p => p.price).sort((a, b) => a - b);
+                const priceRanges = {
+                    '0-1000': 0,
+                    '1001-5000': 0,
+                    '5001-10000': 0,
+                    '10001-50000': 0,
+                    '50001+': 0
+                };
+
+                prices.forEach(price => {
+                    if (price <= 1000) priceRanges['0-1000']++;
+                    else if (price <= 5000) priceRanges['1001-5000']++;
+                    else if (price <= 10000) priceRanges['5001-10000']++;
+                    else if (price <= 50000) priceRanges['10001-50000']++;
+                    else priceRanges['50001+']++;
+                });
+
+                if (this.charts.priceDistributionChart) {
+                    this.charts.priceDistributionChart.destroy();
+                }
+
+                if (prices.length === 0) {
+                    this.showNoDataMessage('priceDistributionChart');
+                    return;
+                }
+
+                this.charts.priceDistributionChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(priceRanges),
+                        datasets: [{
+                            data: Object.values(priceRanges),
+                            backgroundColor: [
+                                '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            renderMonthlyTrendChart() {
+                const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+                
+                const monthlyData = {};
+                this.products.forEach(product => {
+                    const date = new Date(product.date);
+                    const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { count: 0, total: 0 };
+                    }
+                    monthlyData[monthKey].count++;
+                    monthlyData[monthKey].total += product.price;
+                });
+
+                const months = Object.keys(monthlyData).sort();
+                const avgPrices = months.map(month => 
+                    Math.round(monthlyData[month].total / monthlyData[month].count)
+                );
+
+                if (this.charts.monthlyTrendChart) {
+                    this.charts.monthlyTrendChart.destroy();
+                }
+
+                if (months.length === 0) {
+                    this.showNoDataMessage('monthlyTrendChart');
+                    return;
+                }
+
+                this.charts.monthlyTrendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Средняя цена по месяцам',
+                            data: avgPrices,
+                            borderColor: '#EC4899',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            showNoDataMessage(canvasId) {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                ctx.font = '16px Segoe UI';
+                ctx.fillStyle = '#64748B';
+                ctx.textAlign = 'center';
+                ctx.fillText('Нет данных для отображения', 210, 110);
+            }
+
+            updateTables() {
+                this.updateTopProductsTable();
+                this.updateCategoriesTable();
+                this.updatePriceRangesTable();
+            }
+
+            updateTopProductsTable() {
+                const table = document.getElementById('topProductsTable').querySelector('tbody');
+                const topProducts = [...this.products]
+                    .sort((a, b) => b.price - a.price)
+                    .slice(0, 5);
+
+                if (topProducts.length === 0) {
+                    table.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = topProducts.map(product => `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td class="number">${product.price.toLocaleString()}₽</td>
+                        <td>${product.category}</td>
+                    </tr>
+                `).join('');
+            }
+
+            updateCategoriesTable() {
+                const table = document.getElementById('categoriesTable').querySelector('tbody');
+                const categoryStats = {};
+                
+                this.products.forEach(product => {
+                    if (!categoryStats[product.category]) {
+                        categoryStats[product.category] = { count: 0, total: 0 };
+                    }
+                    categoryStats[product.category].count++;
+                    categoryStats[product.category].total += product.price;
+                });
+
+                const categories = Object.keys(categoryStats);
+
+                if (categories.length === 0) {
+                    table.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = categories.map(category => {
+                    const stats = categoryStats[category];
+                    const avgPrice = Math.round(stats.total / stats.count);
+                    return `
+                        <tr>
+                            <td>${category}</td>
+                            <td class="number">${stats.count}</td>
+                            <td class="number">${stats.total.toLocaleString()}₽</td>
+                            <td class="number">${avgPrice.toLocaleString()}₽</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            updatePriceRangesTable() {
+                const table = document.getElementById('priceRangesTable').querySelector('tbody');
+                const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
+                
+                const priceRanges = {
+                    '0-1,000₽': { min: 0, max: 1000, count: 0, total: 0 },
+                    '1,001-5,000₽': { min: 1001, max: 5000, count: 0, total: 0 },
+                    '5,001-10,000₽': { min: 5001, max: 10000, count: 0, total: 0 },
+                    '10,001-50,000₽': { min: 10001, max: 50000, count: 0, total: 0 },
+                    '50,001+₽': { min: 50001, max: Infinity, count: 0, total: 0 }
+                };
+
+                this.products.forEach(product => {
+                    for (const [range, data] of Object.entries(priceRanges)) {
+                        if (product.price >= data.min && product.price <= data.max) {
+                            data.count++;
+                            data.total += product.price;
+                            break;
+                        }
+                    }
+                });
+
+                if (this.products.length === 0) {
+                    table.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = Object.entries(priceRanges).map(([range, data]) => {
+                    const percentage = totalValue > 0 ? ((data.total / totalValue) * 100).toFixed(1) : 0;
+                    return `
+                        <tr>
+                            <td>${range}</td>
+                            <td class="number">${data.count}</td>
+                            <td class="number">${percentage}%</td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
             exportToCSV() {
@@ -1245,6 +1734,16 @@
             document.getElementById('analyticsScreen').classList.remove('hidden');
             
             productManager.updateAnalytics();
+        }
+
+        function switchTab(tabName) {
+            // Убираем активный класс со всех вкладок и контента
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Добавляем активный класс выбранной вкладке и контенту
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
         }
 
         function exportToCSV() {
