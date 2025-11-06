@@ -6,6 +6,7 @@
     <title>Аналитика товаров</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,192 +14,416 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #8B5CF6;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --background: #F8FAFC;
+            --surface: #FFFFFF;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
+            color: var(--text);
         }
         
         .container {
-            max-width: 400px;
+            max-width: 420px;
             margin: 0 auto;
         }
         
+        /* Header Styles */
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
             color: white;
         }
         
         .header h1 {
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: 700;
             margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .header p {
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 400;
         }
         
+        /* Card Styles */
         .card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 24px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
         
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .card-header i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .card-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Button Styles */
         .btn {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             width: 100%;
-            padding: 16px;
+            padding: 18px 24px;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 12px;
-            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 16px;
             text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
         }
         
         .btn-secondary {
-            background: #f8f9fa;
-            color: #333;
-            border: 2px solid #e9ecef;
+            background: var(--surface);
+            color: var(--text);
+            border: 2px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
-        .btn:hover {
+        .btn-secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: var(--primary);
         }
         
+        /* Form Styles */
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: var(--text);
+            font-size: 14px;
         }
         
         .form-control {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text);
         }
         
         .form-control:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
         
         .stat-card {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #f8faff, #f0f4ff);
+            padding: 20px;
+            border-radius: 16px;
             text-align: center;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
         }
         
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
             margin-bottom: 4px;
         }
         
         .stat-label {
             font-size: 12px;
-            color: #666;
+            color: var(--text-light);
+            font-weight: 500;
         }
         
+        /* Chart Containers */
         .chart-container {
-            height: 200px;
-            margin: 20px 0;
+            height: 220px;
+            margin: 24px 0;
+            position: relative;
+        }
+        
+        /* Product Items */
+        .products-list {
+            max-height: 400px;
+            overflow-y: auto;
         }
         
         .product-item {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
+            background: var(--background);
+            padding: 20px;
+            border-radius: 16px;
             margin-bottom: 12px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+        
+        .product-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         .product-name {
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 16px;
         }
         
         .product-meta {
-            font-size: 12px;
-            color: #666;
+            font-size: 14px;
+            color: var(--text-light);
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .product-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 18px;
         }
         
         .category-tag {
-            display: inline-block;
-            padding: 4px 8px;
-            background: #e3f2fd;
-            color: #1976d2;
-            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
             font-size: 12px;
-            margin-top: 4px;
+            font-weight: 500;
         }
         
+        /* Navigation */
         .back-btn {
-            background: none;
-            border: none;
-            color: #667eea;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 16px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 20px;
+            padding: 8px 0;
+            transition: all 0.3s ease;
         }
         
+        .back-btn:hover {
+            transform: translateX(-4px);
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* Utility Classes */
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
+            background: linear-gradient(135deg, #10B981, #34D399);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            animation: slideIn 0.3s ease;
         }
         
         .auto-detection-preview {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+        }
+        
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .action-btn.delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
             font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-            padding: 4px 8px;
-            background: #f0f8ff;
-            border-radius: 4px;
-            border-left: 3px solid #667eea;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -213,47 +438,68 @@
             
             <div class="card">
                 <button class="btn btn-primary" onclick="showAddProductScreen()">
-                    ➕ Добавить товар
+                    <i class="fas fa-plus-circle"></i>
+                    Добавить товар
                 </button>
                 <button class="btn btn-secondary" onclick="showAnalyticsScreen()">
-                    📈 Аналитика
+                    <i class="fas fa-chart-bar"></i>
+                    Аналитика
                 </button>
             </div>
             
             <div class="card">
-                <h3 style="margin-bottom: 12px;">Последние товары</h3>
-                <div id="recentProducts"></div>
+                <div class="card-header">
+                    <i class="fas fa-clock"></i>
+                    <h2>Последние товары</h2>
+                </div>
+                <div id="recentProducts" class="products-list">
+                    <!-- Товары будут загружены здесь -->
+                </div>
             </div>
         </div>
         
         <!-- Экран добавления товара -->
         <div id="addProductScreen" class="hidden">
             <button class="back-btn" onclick="showMainScreen()">
-                ← Назад
+                <i class="fas fa-arrow-left"></i>
+                Назад
             </button>
             
             <div class="card">
-                <h2 style="margin-bottom: 16px;">Добавить товар</h2>
+                <div class="card-header">
+                    <i class="fas fa-plus-circle"></i>
+                    <h2>Добавить товар</h2>
+                </div>
                 
                 <div id="successMessage" class="success-message hidden">
-                    Товар успешно добавлен!
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText">Товар успешно добавлен!</span>
                 </div>
                 
                 <form id="addProductForm">
                     <div class="form-group">
-                        <label for="productName">Название товара</label>
+                        <label for="productName">
+                            <i class="fas fa-tag"></i>
+                            Название товара
+                        </label>
                         <input type="text" id="productName" class="form-control" 
                                placeholder="Например: iPhone 13 Pro Max 256GB" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="productPrice">Цена (₽)</label>
+                        <label for="productPrice">
+                            <i class="fas fa-ruble-sign"></i>
+                            Цена (₽)
+                        </label>
                         <input type="number" id="productPrice" class="form-control" 
-                               placeholder="99999" required>
+                               placeholder="99999" required min="1">
                     </div>
                     
                     <div class="form-group">
-                        <label for="productCategory">Категория</label>
+                        <label for="productCategory">
+                            <i class="fas fa-folder"></i>
+                            Категория
+                        </label>
                         <select id="productCategory" class="form-control">
                             <option value="auto">🎯 Автоматическое определение</option>
                             <option value="📱 ЭЛЕКТРОНИКА">📱 ЭЛЕКТРОНИКА</option>
@@ -271,12 +517,14 @@
                             <option value="🎁 ДРУГОЕ">🎁 ДРУГОЕ</option>
                         </select>
                         <div id="autoDetectionPreview" class="auto-detection-preview hidden">
+                            <i class="fas fa-robot"></i>
                             Автоопределение: <span id="detectedCategory"></span>
                         </div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
-                        ✅ Сохранить товар
+                        <i class="fas fa-save"></i>
+                        Сохранить товар
                     </button>
                 </form>
             </div>
@@ -285,14 +533,21 @@
         <!-- Экран аналитики -->
         <div id="analyticsScreen" class="hidden">
             <button class="back-btn" onclick="showMainScreen()">
-                ← Назад
+                <i class="fas fa-arrow-left"></i>
+                Назад
             </button>
             
             <div class="header">
-                <h1>📈 Аналитика</h1>
+                <h1>📈 Аналитика товаров</h1>
+                <p>Статистика и визуализация ваших данных</p>
             </div>
             
             <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie"></i>
+                    <h2>Общая статистика</h2>
+                </div>
+                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="totalProducts">0</div>
@@ -312,23 +567,30 @@
                     </div>
                 </div>
                 
-                <h3 style="margin-bottom: 12px;">Распределение по категориям</h3>
+                <div class="section-header">
+                    <h3 class="section-title">Распределение по категориям</h3>
+                </div>
                 <div class="chart-container">
                     <canvas id="categoryChart"></canvas>
                 </div>
                 
-                <h3 style="margin-bottom: 12px;">Динамика цен</h3>
+                <div class="section-header">
+                    <h3 class="section-title">Динамика цен</h3>
+                </div>
                 <div class="chart-container">
                     <canvas id="priceChart"></canvas>
                 </div>
                 
-                <button class="btn btn-secondary" onclick="exportToCSV()" style="margin-top: 16px;">
-                    📥 Экспорт в CSV
-                </button>
-                
-                <button class="btn btn-secondary" onclick="clearAllData()" style="background: #ff4757; color: white; margin-top: 8px;">
-                    🗑️ Очистить все данные
-                </button>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="btn btn-secondary" onclick="exportToCSV()" style="flex: 1;">
+                        <i class="fas fa-file-export"></i>
+                        Экспорт в CSV
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAllData()" style="flex: 1; background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger);">
+                        <i class="fas fa-trash"></i>
+                        Очистить данные
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -427,7 +689,7 @@
                 "Шины и диски",
                 "Автоэлектроника",
                 "Уход за автомобилем",
-                "Автоаксессуары",
+                "Автоаксесссуары",
                 "Автомасла и химия",
                 "Инструменты для авто"
             ],
@@ -666,7 +928,8 @@
                 
                 // Показываем сообщение об успехе
                 const successMessage = document.getElementById('successMessage');
-                successMessage.textContent = `✅ Товар "${name}" добавлен в категорию ${category}`;
+                const successText = document.getElementById('successText');
+                successText.textContent = `Товар "${name}" добавлен в категорию ${category}`;
                 successMessage.classList.remove('hidden');
                 
                 // Очищаем форму
@@ -714,7 +977,12 @@
                 const recentProducts = this.products.slice(-5).reverse();
                 
                 if (recentProducts.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: #666;">Товаров пока нет</p>';
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>Товаров пока нет</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -722,14 +990,19 @@
                     <div class="product-item">
                         <div class="product-name">${product.name}</div>
                         <div class="product-meta">
-                            <span>${product.price}₽</span>
-                            <span>${new Date(product.date).toLocaleDateString()}</span>
+                            <span>${new Date(product.date).toLocaleDateString('ru-RU')}</span>
+                            <span class="product-price">${product.price.toLocaleString()}₽</span>
                         </div>
-                        <div class="category-tag">${product.category}</div>
-                        <button onclick="productManager.deleteProduct(${product.id})" 
-                                style="margin-top: 8px; background: #ff4757; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-                            Удалить
-                        </button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                            <div class="category-tag">
+                                <i class="fas fa-tag"></i>
+                                ${product.category}
+                            </div>
+                            <button class="action-btn delete" onclick="productManager.deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i>
+                                Удалить
+                            </button>
+                        </div>
                     </div>
                 `).join('');
             }
@@ -776,38 +1049,42 @@
                 }
 
                 if (Object.keys(categoryData).length === 0) {
-                    ctx.font = '14px Arial';
-                    ctx.fillStyle = '#666';
+                    ctx.font = '16px Segoe UI';
+                    ctx.fillStyle = '#64748B';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Нет данных для отображения', 150, 100);
+                    ctx.fillText('Нет данных для отображения', 210, 110);
                     return;
                 }
 
                 this.categoryChart = new Chart(ctx, {
-                    type: 'pie',
+                    type: 'doughnut',
                     data: {
                         labels: Object.keys(categoryData),
                         datasets: [{
                             data: Object.values(categoryData),
                             backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                                '#9966FF'
-                            ]
+                                '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B',
+                                '#10B981', '#EF4444', '#3B82F6', '#F97316',
+                                '#06B6D4', '#84CC16', '#F43F5E', '#8B5CF6'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        cutout: '60%',
                         plugins: {
                             legend: {
                                 position: 'bottom',
                                 labels: {
                                     boxWidth: 12,
                                     font: {
-                                        size: 10
-                                    }
+                                        size: 11,
+                                        family: 'Segoe UI'
+                                    },
+                                    padding: 20
                                 }
                             }
                         }
@@ -829,10 +1106,10 @@
                 }
 
                 if (sortedProducts.length === 0) {
-                    ctx.font = '14px Arial';
-                    ctx.fillStyle = '#666';
+                    ctx.font = '16px Segoe UI';
+                    ctx.fillStyle = '#64748B';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Нет данных для отображения', 150, 100);
+                    ctx.fillText('Нет данных для отображения', 210, 110);
                     return;
                 }
 
@@ -840,15 +1117,21 @@
                     type: 'line',
                     data: {
                         labels: sortedProducts.map(p => 
-                            new Date(p.date).toLocaleDateString()
+                            new Date(p.date).toLocaleDateString('ru-RU')
                         ),
                         datasets: [{
                             label: 'Цена товаров',
                             data: sortedProducts.map(p => p.price),
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderColor: '#6366F1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 3,
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            pointBackgroundColor: '#6366F1',
+                            pointBorderColor: '#FFFFFF',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
                         }]
                     },
                     options: {
@@ -856,7 +1139,35 @@
                         maintainAspectRatio: false,
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Segoe UI'
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Segoe UI'
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        family: 'Segoe UI',
+                                        size: 12
+                                    }
+                                }
                             }
                         }
                     }
@@ -876,7 +1187,7 @@
                         `"${product.name}"`,
                         product.price,
                         `"${product.category}"`,
-                        `"${new Date(product.date).toLocaleDateString()}"`,
+                        `"${new Date(product.date).toLocaleDateString('ru-RU')}"`,
                         `"${product.marketplace}"`
                     ].join(','))
                 ].join('\n');
