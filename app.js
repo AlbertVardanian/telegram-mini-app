@@ -1,237 +1,17 @@
-// Инициализация Telegram Web App
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-// Категории и подкатегории (только для классификации)
-const CATEGORIES = {
-    "📱 ЭЛЕКТРОНИКА": [
-        "Смартфоны и гаджеты",
-        "Компьютеры и ноутбуки", 
-        "Телевизоры и аудио",
-        "Фото и видео техника",
-        "Игровые приставки",
-        "Умный дом",
-        "Электротранспорт"
-    ],
-    
-    "🏠 БЫТОВАЯ ТЕХНИКА": [
-        "Крупная бытовая техника",
-        "Малая кухонная техника", 
-        "Климатическая техника",
-        "Уборка и уход за одеждой",
-        "Приготовление пищи",
-        "Уход за внешностью"
-    ],
-    
-    "👕 ОДЕЖДА И ОБУВЬ": [
-        "Мужская одежда",
-        "Женская одежда", 
-        "Детская одежда",
-        "Обувь",
-        "Аксесссуары",
-        "Спортивная одежда",
-        "Нижнее белье"
-    ],
-    
-    "💄 КРАСОТА И ЗДОРОВЬЕ": [
-        "Косметика",
-        "Парфюмерия", 
-        "Уход за кожей",
-        "Уход за волосами",
-        "Декоративная косметика",
-        "Витамины и БАДы",
-        "Медицинские изделия"
-    ],
-    
-    "🎮 ИГРУШКИ И ХОББИ": [
-        "Детские игрушки",
-        "Настольные игры",
-        "Конструкторы",
-        "Творчество и рукоделие",
-        "Коллекционирование",
-        "Спортивные хобби",
-        "Музыкальные инструменты"
-    ],
-    
-    "🛋 ДОМ И САД": [
-        "Мебель",
-        "Текстиль для дома",
-        "Декор и освещение",
-        "Посуда и кухонные принадлежности",
-        "Товары для сада",
-        "Инструменты",
-        "Хранение вещей"
-    ],
-    
-    "👶 ДЕТСКИЕ ТОВАРЫ": [
-        "Товары для малышей",
-        "Детское питание",
-        "Школьные принадлежности",
-        "Детский транспорт",
-        "Товары для кормления",
-        "Гигиена и уход",
-        "Безопасность"
-    ],
-    
-    "🏃 СПОРТ И ОТДЫХ": [
-        "Тренажеры и фитнес",
-        "Спортивный инвентарь",
-        "Туризм и кемпинг",
-        "Велоспорт",
-        "Зимние виды спорта",
-        "Водные виды спорта",
-        "Охота и рыбалка",
-        "Спортивная обувь",
-        "Спортивная одежда"
-    ],
-    
-    "🚗 АВТОТОВАРЫ": [
-        "Автозапчасти",
-        "Шины и диски",
-        "Автоэлектроника",
-        "Уход за автомобилем",
-        "Автоаксесссуары",
-        "Автомасла и химия",
-        "Инструменты для авто"
-    ],
-    
-    "📚 КНИГИ И КАНЦТОВАРЫ": [
-        "Книги",
-        "Канцелярские товары",
-        "Офисные принадлежности",
-        "Бумажная продукция",
-        "Учебная литература",
-        "Творческие наборы",
-        "Электронные книги"
-    ],
-    
-    "🐾 ЗООТОВАРЫ": [
-        "Корм для животных",
-        "Аксесссуары для животных",
-        "Игрушки для питомцев",
-        "Ветеринарные товары",
-        "Уход и гигиена",
-        "Переноски и лежаки",
-        "Одежда для животных"
-    ],
-    
-    "🍎 ПРОДУКТЫ ПИТАНИЯ": [
-        "Бакалея",
-        "Молочные продукты",
-        "Мясо и птица",
-        "Рыба и морепродукты",
-        "Овощи и фрукты",
-        "Напитки",
-        "Замороженные продукты"
-    ],
-    
-    "🎁 ДРУГОЕ": []
-};
-
-// Ключевые слова для автоматического определения категорий
+// Конфигурация категорий
 const CATEGORY_KEYWORDS = {
     "📱 ЭЛЕКТРОНИКА": [
         "iphone", "samsung", "xiaomi", "телефон", "смартфон", "android", "ios",
         "ноутбук", "macbook", "asus", "lenovo", "планшет", "ipad", "airpods",
-        "наушники", "колонка", "часы", "apple watch", "монитор", "клавиатура", "мышь",
-        "компьютер", "процессор", "видеокарта", "оперативная", "память", "ssd", "hdd",
-        "телевизор", "аудио", "колонки", "фотоаппарат", "камера", "объектив",
-        "playstation", "xbox", "nintendo", "приставка", "контроллер", "джойстик",
-        "умный дом", "робот", "пылесос", "лампа", "розетка", "датчик",
-        "гироскутер", "самокат", "электросамокат", "моноколесо"
+        "наушники", "колонка", "часы", "apple watch", "монитор", "клавиатура", "мышь"
     ],
-    
     "🏠 БЫТОВАЯ ТЕХНИКА": [
         "холодильник", "стиральная", "машина", "посудомоечная", "плита", "духовка",
-        "микроволновка", "кофемашина", "чайник", "блендер", "миксер", "соковыжималка",
-        "тостер", "мультиварка", "сковорода", "гриль", "мясорубка", "кухонный", "комбайн",
-        "кондиционер", "обогреватель", "вентилятор", "увлажнитель", "очиститель",
-        "пылесос", "пароочиститель", "утюг", "отпариватель", "швейная", "машинка",
-        "фен", "щипцы", "выпрямитель", "массажер", "эпилятор", "бритва", "триммер"
+        "микроволновка", "кофемашина", "чайник", "блендер", "миксер", "соковыжималка"
     ],
-    
     "👕 ОДЕЖДА И ОБУВЬ": [
         "футболка", "рубашка", "кофта", "худи", "свитер", "куртка", "пальто", "джинсы",
-        "брюки", "шорты", "платье", "юбка", "блузка", "пиджак", "жилет", "костюм",
-        "кроссовки", "туфли", "ботинки", "кеды", "сапоги", "сандали", "тапочки",
-        "кепка", "шапка", "шарф", "перчатки", "ремень", "галстук", "платок",
-        "спортивный", "костюм", "леггинсы", "белье", "трусы", "бюстгальтер"
-    ],
-    
-    "💄 КРАСОТА И ЗДОРОВЬЕ": [
-        "крем", "шампунь", "гель", "духи", "тушь", "помада", "тени", "пудра",
-        "лосьон", "дезодорант", "бритва", "зеркало", "расческа", "лак", "гель",
-        "мыло", "косметика", "макияж", "парфюм", "сыворотка", "тоник", "скраб",
-        "маска", "бритье", "уход", "кожа", "волосы", "витамины", "бад", "медицинский",
-        "тонометр", "глюкометр", "бинт", "пластырь", "термометр"
-    ],
-    
-    "🎮 ИГРУШКИ И ХОББИ": [
-        "игрушка", "кукла", "машинка", "конструктор", "лего", "пазл", "настольная",
-        "игра", "монополия", "шахматы", "шашки", "творчество", "рукоделие", "вышивание",
-        "вязание", "рисование", "краски", "кисти", "коллекция", "модель", "радиоуправляемый",
-        "гитара", "фортепиано", "синтезатор", "скрипка", "барабан", "музыкальный"
-    ],
-    
-    "🛋 ДОМ И САД": [
-        "стол", "стул", "кровать", "диван", "шкаф", "полка", "комод", "тумба",
-        "кресло", "мебель", "текстиль", "шторы", "ковер", "покрывало", "подушка",
-        "одеяло", "постельное", "белье", "декор", "ваза", "картина", "зеркало",
-        "лампа", "светильник", "люстра", "посуда", "тарелка", "чашка", "стакан",
-        "кастрюля", "сковорода", "нож", "вилка", "ложка", "садовый", "инструмент",
-        "лопата", "грабли", "секатор", "газонокосилка", "горшок", "растение", "цветок"
-    ],
-    
-    "👶 ДЕТСКИЕ ТОВАРЫ": [
-        "подгузник", "памперс", "соска", "пустышка", "бутылочка", "питание", "молочная",
-        "смесь", "пюре", "каша", "кроватка", "коляска", "манеж", "шезлонг", "ходунки",
-        "прыгунки", "рюкзак", "пенал", "тетрадь", "учебник", "ранец", "школьный",
-        "велосипед", "самокат", "ролики", "коньки", "кормление", "столик", "стульчик",
-        "гигиена", "шампунь", "крем", "присыпка", "безопасность", "защита", "ворота"
-    ],
-    
-    "🏃 СПОРТ И ОТДЫХ": [
-        "тренажер", "беговая", "дорожка", "велотренажер", "гантели", "штанга", "гиря",
-        "эспандер", "фитнес", "йога", "коврик", "мяч", "футбольный", "баскетбольный",
-        "волейбольный", "теннис", "ракетка", "клюшка", "коньки", "лыжи", "сноуборд",
-        "велосипед", "шлем", "защита", "палатка", "спальник", "рюкзак", "термос",
-        "туризм", "кемпинг", "рыбалка", "удочка", "катушка", "леска", "крючок",
-        "спортивный", "костюм", "форма", "обувь", "кроссовки", "кеды"
-    ],
-    
-    "🚗 АВТОТОВАРЫ": [
-        "авто", "машина", "запчасть", "двигатель", "аккумулятор", "шины", "диски",
-        "колесо", "масло", "фильтр", "тормоз", "колодки", "амортизатор", "свеча",
-        "магнитола", "колонки", "навигатор", "регистратор", "антирадар", "чехол",
-        "коврик", "ароматизатор", "подлокотник", "зеркало", "щетки", "омыватель",
-        "воск", "полироль", "шампунь", "инструмент", "домкрат", "ключ", "компрессор"
-    ],
-    
-    "📚 КНИГИ И КАНЦТОВАРЫ": [
-        "книга", "учебник", "роман", "детектив", "фантастика", "журнал", "комикс",
-        "словарь", "энциклопедия", "пособие", "художественная", "блокнот", "тетрадь",
-        "альбом", "дневник", "ручка", "карандаш", "маркер", "фломастер", "ластик",
-        "точилка", "линейка", "циркуль", "пенал", "папка", "файл", "скотч", "клей",
-        "степлер", "дырокол", "календарь", "ежедневник", "бумага", "картон", "краски"
-    ],
-    
-    "🐾 ЗООТОВАРЫ": [
-        "корм", "сухой", "влажный", "консервы", "лакомство", "витамины", "добавки",
-        "ошейник", "поводок", "шлейка", "игрушка", "мяч", "косточка", "когтеточка",
-        "лежанка", "домик", "перноска", "клетка", "аквариум", "террариум", "фильтр",
-        "наполнитель", "лоток", "туалет", "шампунь", "расческа", "щетка", "когтерез",
-        "миска", "поилка", "автопоилка", "одежда", "комбинезон", "попона"
-    ],
-    
-    "🍎 ПРОДУКТЫ ПИТАНИЯ": [
-        "бакалея", "крупа", "гречка", "рис", "макароны", "мука", "сахар", "соль",
-        "масло", "подсолнечное", "оливковое", "молоко", "кефир", "сметана", "творог",
-        "сыр", "йогурт", "мясо", "говядина", "свинина", "курица", "индейка", "колбаса",
-        "сосиски", "рыба", "лосось", "селедка", "икра", "морепродукты", "креветки",
-        "овощи", "фрукты", "яблоки", "апельсины", "бананы", "помидоры", "огурцы",
-        "сок", "вода", "газировка", "лимонад", "чай", "кофе", "какао", "печенье",
-        "конфеты", "шоколад", "торт", "пирожное", "мороженое", "замороженные", "полуфабрикаты"
+        "брюки", "шорты", "платье", "юбка", "блузка", "пиджак", "жилет", "костюм"
     ]
 };
 
@@ -240,65 +20,46 @@ class ProductManager {
         this.products = this.loadProducts();
         this.charts = {};
         this.init();
-        
-        // Инициализируем аналитику при загрузке
-        setTimeout(() => {
-            this.updateAnalytics();
-        }, 100);
     }
 
     init() {
         this.setupEventListeners();
         this.showMainScreen();
         this.updateRecentProducts();
-        
-        // Автоопределение категории при вводе названия
-        const productNameInput = document.getElementById('productName');
-        if (productNameInput) {
-            productNameInput.addEventListener('input', (e) => {
-                this.updateCategoryPreview(e.target.value);
-            });
-        }
-
-        // Обновление предпросмотра при изменении категории
-        const categorySelect = document.getElementById('productCategory');
-        if (categorySelect) {
-            categorySelect.addEventListener('change', (e) => {
-                this.updateCategoryPreview(document.getElementById('productName').value);
-            });
-        }
     }
 
     setupEventListeners() {
-        const addProductForm = document.getElementById('addProductForm');
-        if (addProductForm) {
-            addProductForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.addProduct();
-            });
-        }
+        // Форма добавления товара
+        document.getElementById('addProductForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addProduct();
+        });
+
+        // Автоопределение категории
+        document.getElementById('productName').addEventListener('input', (e) => {
+            this.updateCategoryPreview(e.target.value);
+        });
+
+        document.getElementById('productCategory').addEventListener('change', (e) => {
+            this.updateCategoryPreview(document.getElementById('productName').value);
+        });
     }
 
-    // Автоматическое определение категории по названию
+    // Автоматическое определение категории
     detectCategory(productName) {
         const name = productName.toLowerCase();
-        
         for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
             if (keywords.some(keyword => name.includes(keyword.toLowerCase()))) {
                 return category;
             }
         }
-        
         return '🎁 ДРУГОЕ';
     }
 
-    // Обновление предпросмотра категории
     updateCategoryPreview(productName) {
-        const categorySelect = document.getElementById('productCategory');
         const preview = document.getElementById('autoDetectionPreview');
         const detectedCategorySpan = document.getElementById('detectedCategory');
-        
-        if (!categorySelect || !preview || !detectedCategorySpan) return;
+        const categorySelect = document.getElementById('productCategory');
         
         if (productName.trim() === '') {
             preview.classList.add('hidden');
@@ -326,7 +87,7 @@ class ProductManager {
             return;
         }
 
-        // Если выбран авторежим, используем автоопределенную категорию
+        // Автоопределение категории
         if (category === 'auto') {
             category = this.detectCategory(name);
         }
@@ -336,8 +97,7 @@ class ProductManager {
             name,
             price,
             category,
-            date: new Date().toISOString(),
-            marketplace: 'auto'
+            date: new Date().toISOString()
         };
 
         this.products.push(product);
@@ -351,8 +111,9 @@ class ProductManager {
         
         // Очищаем форму
         document.getElementById('addProductForm').reset();
+        document.getElementById('autoDetectionPreview').classList.add('hidden');
         
-        // Обновляем список товаров
+        // Обновляем интерфейс
         this.updateRecentProducts();
         
         // Скрываем сообщение через 3 секунды
@@ -375,7 +136,7 @@ class ProductManager {
             const stored = localStorage.getItem('products');
             return stored ? JSON.parse(stored) : [];
         } catch (error) {
-            console.error('Ошибка загрузки данных:', error);
+            console.error('Ошибка загрузки:', error);
             return [];
         }
     }
@@ -383,16 +144,13 @@ class ProductManager {
     saveProducts() {
         try {
             localStorage.setItem('products', JSON.stringify(this.products));
-            console.log('Данные сохранены:', this.products);
         } catch (error) {
-            console.error('Ошибка сохранения данных:', error);
+            console.error('Ошибка сохранения:', error);
         }
     }
 
     updateRecentProducts() {
         const container = document.getElementById('recentProducts');
-        if (!container) return;
-        
         const recentProducts = this.products.slice(-5).reverse();
         
         if (recentProducts.length === 0) {
@@ -427,77 +185,48 @@ class ProductManager {
     }
 
     updateAnalytics() {
-        if (document.getElementById('analyticsScreen').classList.contains('hidden')) {
-            return; // Не обновляем аналитику если экран скрыт
-        }
-        
         this.updateStats();
         this.renderCharts();
         this.updateTables();
     }
 
     updateStats() {
-        // Обновляем статистику
         const totalProducts = this.products.length;
-        const totalProductsEl = document.getElementById('totalProducts');
-        if (totalProductsEl) totalProductsEl.textContent = totalProducts;
-        
-        const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
-        const totalValueEl = document.getElementById('totalValue');
-        if (totalValueEl) totalValueEl.textContent = `${totalValue.toLocaleString()}₽`;
-
+        const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
         const avgPrice = totalProducts > 0 ? Math.round(totalValue / totalProducts) : 0;
-        const avgPriceEl = document.getElementById('avgPrice');
-        if (avgPriceEl) avgPriceEl.textContent = `${avgPrice.toLocaleString()}₽`;
-
+        
         // Находим популярную категорию
         const categoryCount = {};
-        this.products.forEach(product => {
-            categoryCount[product.category] = (categoryCount[product.category] || 0) + 1;
+        this.products.forEach(p => {
+            categoryCount[p.category] = (categoryCount[p.category] || 0) + 1;
         });
-        
         const topCategory = Object.keys(categoryCount).length > 0 
-            ? Object.keys(categoryCount).reduce((a, b) => 
-                categoryCount[a] > categoryCount[b] ? a : b)
-            : 'Нет данных';
-        const topCategoryEl = document.getElementById('topCategory');
-        if (topCategoryEl) topCategoryEl.textContent = topCategory;
+            ? Object.keys(categoryCount).reduce((a, b) => categoryCount[a] > categoryCount[b] ? a : b)
+            : '-';
+
+        document.getElementById('totalProducts').textContent = totalProducts;
+        document.getElementById('totalValue').textContent = `${totalValue.toLocaleString()}₽`;
+        document.getElementById('avgPrice').textContent = `${avgPrice.toLocaleString()}₽`;
+        document.getElementById('topCategory').textContent = topCategory;
     }
 
     renderCharts() {
-        if (document.getElementById('categoryChart')) {
-            this.renderCategoryChart();
-        }
-        if (document.getElementById('timelineChart')) {
-            this.renderTimelineChart();
-        }
-        if (document.getElementById('categoryBarChart')) {
-            this.renderCategoryBarChart();
-        }
-        if (document.getElementById('priceByCategoryChart')) {
-            this.renderPriceByCategoryChart();
-        }
-        if (document.getElementById('priceDistributionChart')) {
-            this.renderPriceDistributionChart();
-        }
-        if (document.getElementById('monthlyTrendChart')) {
-            this.renderMonthlyTrendChart();
-        }
+        this.renderCategoryChart();
+        this.renderTimelineChart();
+        this.renderCategoryBarChart();
+        this.renderPriceByCategoryChart();
+        this.renderPriceDistributionChart();
     }
 
     renderCategoryChart() {
-        const canvas = document.getElementById('categoryChart');
-        if (!canvas) return;
+        const ctx = document.getElementById('categoryChart').getContext('2d');
         
-        const ctx = canvas.getContext('2d');
-        
-        // Группируем по категориям
         const categoryData = {};
-        this.products.forEach(product => {
-            categoryData[product.category] = (categoryData[product.category] || 0) + 1;
+        this.products.forEach(p => {
+            categoryData[p.category] = (categoryData[p.category] || 0) + 1;
         });
 
-        // Удаляем старый график если существует
+        // Удаляем старый график
         if (this.charts.categoryChart) {
             this.charts.categoryChart.destroy();
         }
@@ -513,46 +242,22 @@ class ProductManager {
                 labels: Object.keys(categoryData),
                 datasets: [{
                     data: Object.values(categoryData),
-                    backgroundColor: [
-                        '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B',
-                        '#10B981', '#EF4444', '#3B82F6', '#F97316',
-                        '#06B6D4', '#84CC16', '#F43F5E', '#8B5CF6'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#FFFFFF'
+                    backgroundColor: ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981']
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                cutout: '60%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            font: {
-                                size: 11,
-                                family: 'Segoe UI'
-                            },
-                            padding: 20
-                        }
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
     }
 
     renderTimelineChart() {
-        const canvas = document.getElementById('timelineChart');
-        if (!canvas) return;
+        const ctx = document.getElementById('timelineChart').getContext('2d');
         
-        const ctx = canvas.getContext('2d');
-        
-        // Группируем по датам
         const timelineData = {};
-        this.products.forEach(product => {
-            const date = new Date(product.date).toLocaleDateString('ru-RU');
+        this.products.forEach(p => {
+            const date = new Date(p.date).toLocaleDateString('ru-RU');
             timelineData[date] = (timelineData[date] || 0) + 1;
         });
 
@@ -577,49 +282,32 @@ class ProductManager {
                     data: counts,
                     borderColor: '#10B981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
                     fill: true
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
     }
 
     renderCategoryBarChart() {
-        const canvas = document.getElementById('categoryBarChart');
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
+        const ctx = document.getElementById('categoryBarChart').getContext('2d');
         
         const categoryStats = {};
-        this.products.forEach(product => {
-            if (!categoryStats[product.category]) {
-                categoryStats[product.category] = { count: 0, total: 0 };
+        this.products.forEach(p => {
+            if (!categoryStats[p.category]) {
+                categoryStats[p.category] = 0;
             }
-            categoryStats[product.category].count++;
-            categoryStats[product.category].total += product.price;
+            categoryStats[p.category]++;
         });
-
-        const categories = Object.keys(categoryStats);
-        const counts = categories.map(cat => categoryStats[cat].count);
 
         if (this.charts.categoryBarChart) {
             this.charts.categoryBarChart.destroy();
         }
 
-        if (categories.length === 0) {
+        if (Object.keys(categoryStats).length === 0) {
             this.showNoDataMessage('categoryBarChart');
             return;
         }
@@ -627,40 +315,30 @@ class ProductManager {
         this.charts.categoryBarChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: categories,
+                labels: Object.keys(categoryStats),
                 datasets: [{
                     label: 'Количество товаров',
-                    data: counts,
-                    backgroundColor: '#6366F1',
-                    borderColor: '#4F46E5',
-                    borderWidth: 1
+                    data: Object.values(categoryStats),
+                    backgroundColor: '#6366F1'
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
     }
 
     renderPriceByCategoryChart() {
-        const canvas = document.getElementById('priceByCategoryChart');
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
+        const ctx = document.getElementById('priceByCategoryChart').getContext('2d');
         
         const categoryStats = {};
-        this.products.forEach(product => {
-            if (!categoryStats[product.category]) {
-                categoryStats[product.category] = { count: 0, total: 0 };
+        this.products.forEach(p => {
+            if (!categoryStats[p.category]) {
+                categoryStats[p.category] = { count: 0, total: 0 };
             }
-            categoryStats[product.category].count++;
-            categoryStats[product.category].total += product.price;
+            categoryStats[p.category].count++;
+            categoryStats[p.category].total += p.price;
         });
 
         const categories = Object.keys(categoryStats);
@@ -684,51 +362,40 @@ class ProductManager {
                 datasets: [{
                     label: 'Средняя цена',
                     data: avgPrices,
-                    backgroundColor: '#F59E0B',
-                    borderColor: '#D97706',
-                    borderWidth: 1
+                    backgroundColor: '#F59E0B'
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
     }
 
     renderPriceDistributionChart() {
-        const canvas = document.getElementById('priceDistributionChart');
-        if (!canvas) return;
+        const ctx = document.getElementById('priceDistributionChart').getContext('2d');
         
-        const ctx = canvas.getContext('2d');
-        
-        const prices = this.products.map(p => p.price).sort((a, b) => a - b);
         const priceRanges = {
-            '0-1000': 0,
-            '1001-5000': 0,
-            '5001-10000': 0,
-            '10001-50000': 0,
-            '50001+': 0
+            '0-1,000₽': 0,
+            '1,001-5,000₽': 0,
+            '5,001-10,000₽': 0,
+            '10,001-50,000₽': 0,
+            '50,001+₽': 0
         };
 
-        prices.forEach(price => {
-            if (price <= 1000) priceRanges['0-1000']++;
-            else if (price <= 5000) priceRanges['1001-5000']++;
-            else if (price <= 10000) priceRanges['5001-10000']++;
-            else if (price <= 50000) priceRanges['10001-50000']++;
-            else priceRanges['50001+']++;
+        this.products.forEach(p => {
+            if (p.price <= 1000) priceRanges['0-1,000₽']++;
+            else if (p.price <= 5000) priceRanges['1,001-5,000₽']++;
+            else if (p.price <= 10000) priceRanges['5,001-10,000₽']++;
+            else if (p.price <= 50000) priceRanges['10,001-50,000₽']++;
+            else priceRanges['50,001+₽']++;
         });
 
         if (this.charts.priceDistributionChart) {
             this.charts.priceDistributionChart.destroy();
         }
 
-        if (prices.length === 0) {
+        if (this.products.length === 0) {
             this.showNoDataMessage('priceDistributionChart');
             return;
         }
@@ -739,60 +406,7 @@ class ProductManager {
                 labels: Object.keys(priceRanges),
                 datasets: [{
                     data: Object.values(priceRanges),
-                    backgroundColor: [
-                        '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    }
-
-    renderMonthlyTrendChart() {
-        const canvas = document.getElementById('monthlyTrendChart');
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
-        
-        const monthlyData = {};
-        this.products.forEach(product => {
-            const date = new Date(product.date);
-            const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-            if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = { count: 0, total: 0 };
-            }
-            monthlyData[monthKey].count++;
-            monthlyData[monthKey].total += product.price;
-        });
-
-        const months = Object.keys(monthlyData).sort();
-        const avgPrices = months.map(month => 
-            Math.round(monthlyData[month].total / monthlyData[month].count)
-        );
-
-        if (this.charts.monthlyTrendChart) {
-            this.charts.monthlyTrendChart.destroy();
-        }
-
-        if (months.length === 0) {
-            this.showNoDataMessage('monthlyTrendChart');
-            return;
-        }
-
-        this.charts.monthlyTrendChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [{
-                    label: 'Средняя цена по месяцам',
-                    data: avgPrices,
-                    borderColor: '#EC4899',
-                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                    tension: 0.4,
-                    fill: true
+                    backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6']
                 }]
             },
             options: {
@@ -804,100 +418,75 @@ class ProductManager {
 
     showNoDataMessage(canvasId) {
         const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем canvas
-        ctx.font = '14px Segoe UI';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '14px Arial';
         ctx.fillStyle = '#64748B';
         ctx.textAlign = 'center';
-        ctx.fillText('Нет данных для отображения', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Нет данных', canvas.width / 2, canvas.height / 2);
     }
 
     updateTables() {
-        if (document.getElementById('topProductsTable')) {
-            this.updateTopProductsTable();
-        }
-        if (document.getElementById('categoriesTable')) {
-            this.updateCategoriesTable();
-        }
-        if (document.getElementById('priceRangesTable')) {
-            this.updatePriceRangesTable();
-        }
-        if (document.getElementById('allProductsTable')) {
-            this.updateAllProductsTable();
-        }
+        this.updateTopProductsTable();
+        this.updateCategoriesTable();
+        this.updatePriceRangesTable();
+        this.updateAllProductsTable();
     }
 
     updateTopProductsTable() {
-        const table = document.getElementById('topProductsTable');
-        if (!table) return;
-        
-        const tbody = table.querySelector('tbody');
+        const tbody = document.querySelector('#topProductsTable tbody');
         const topProducts = [...this.products]
             .sort((a, b) => b.price - a.price)
             .slice(0, 5);
 
-        if (topProducts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = topProducts.map(product => `
-            <tr>
-                <td>${this.escapeHtml(product.name)}</td>
-                <td class="number">${product.price.toLocaleString()}₽</td>
-                <td>${this.escapeHtml(product.category)}</td>
-                <td>
-                    <button class="delete-btn" onclick="productManager.deleteProduct(${product.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = topProducts.length === 0 ? 
+            '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>' :
+            topProducts.map(p => `
+                <tr>
+                    <td>${this.escapeHtml(p.name)}</td>
+                    <td class="number">${p.price.toLocaleString()}₽</td>
+                    <td>${this.escapeHtml(p.category)}</td>
+                    <td>
+                        <button class="delete-btn" onclick="productManager.deleteProduct(${p.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
     }
 
     updateCategoriesTable() {
-        const table = document.getElementById('categoriesTable');
-        if (!table) return;
-        
-        const tbody = table.querySelector('tbody');
+        const tbody = document.querySelector('#categoriesTable tbody');
         const categoryStats = {};
         
-        this.products.forEach(product => {
-            if (!categoryStats[product.category]) {
-                categoryStats[product.category] = { count: 0, total: 0 };
+        this.products.forEach(p => {
+            if (!categoryStats[p.category]) {
+                categoryStats[p.category] = { count: 0, total: 0 };
             }
-            categoryStats[product.category].count++;
-            categoryStats[product.category].total += product.price;
+            categoryStats[p.category].count++;
+            categoryStats[p.category].total += p.price;
         });
 
         const categories = Object.keys(categoryStats);
 
-        if (categories.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = categories.map(category => {
-            const stats = categoryStats[category];
-            const avgPrice = Math.round(stats.total / stats.count);
-            return `
-                <tr>
-                    <td>${this.escapeHtml(category)}</td>
-                    <td class="number">${stats.count}</td>
-                    <td class="number">${stats.total.toLocaleString()}₽</td>
-                    <td class="number">${avgPrice.toLocaleString()}₽</td>
-                </tr>
-            `;
-        }).join('');
+        tbody.innerHTML = categories.length === 0 ? 
+            '<tr><td colspan="4" style="text-align: center; color: #64748B;">Нет данных</td></tr>' :
+            categories.map(cat => {
+                const stats = categoryStats[cat];
+                const avgPrice = Math.round(stats.total / stats.count);
+                return `
+                    <tr>
+                        <td>${this.escapeHtml(cat)}</td>
+                        <td class="number">${stats.count}</td>
+                        <td class="number">${stats.total.toLocaleString()}₽</td>
+                        <td class="number">${avgPrice.toLocaleString()}₽</td>
+                    </tr>
+                `;
+            }).join('');
     }
 
     updatePriceRangesTable() {
-        const table = document.getElementById('priceRangesTable');
-        if (!table) return;
-        
-        const tbody = table.querySelector('tbody');
+        const tbody = document.querySelector('#priceRangesTable tbody');
         const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
         
         const priceRanges = {
@@ -908,58 +497,49 @@ class ProductManager {
             '50,001+₽': { min: 50001, max: Infinity, count: 0, total: 0 }
         };
 
-        this.products.forEach(product => {
+        this.products.forEach(p => {
             for (const [range, data] of Object.entries(priceRanges)) {
-                if (product.price >= data.min && product.price <= data.max) {
+                if (p.price >= data.min && p.price <= data.max) {
                     data.count++;
-                    data.total += product.price;
+                    data.total += p.price;
                     break;
                 }
             }
         });
 
-        if (this.products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = Object.entries(priceRanges).map(([range, data]) => {
-            const percentage = totalValue > 0 ? ((data.total / totalValue) * 100).toFixed(1) : 0;
-            return `
-                <tr>
-                    <td>${range}</td>
-                    <td class="number">${data.count}</td>
-                    <td class="number">${percentage}%</td>
-                </tr>
-            `;
-        }).join('');
+        tbody.innerHTML = this.products.length === 0 ? 
+            '<tr><td colspan="3" style="text-align: center; color: #64748B;">Нет данных</td></tr>' :
+            Object.entries(priceRanges).map(([range, data]) => {
+                const percentage = totalValue > 0 ? ((data.total / totalValue) * 100).toFixed(1) : 0;
+                return `
+                    <tr>
+                        <td>${range}</td>
+                        <td class="number">${data.count}</td>
+                        <td class="number">${percentage}%</td>
+                    </tr>
+                `;
+            }).join('');
     }
 
     updateAllProductsTable() {
-        const table = document.getElementById('allProductsTable');
-        if (!table) return;
-        
-        const tbody = table.querySelector('tbody');
+        const tbody = document.querySelector('#allProductsTable tbody');
         const sortedProducts = [...this.products].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        if (sortedProducts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748B;">Нет данных</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = sortedProducts.map(product => `
-            <tr>
-                <td>${this.escapeHtml(product.name)}</td>
-                <td class="number">${product.price.toLocaleString()}₽</td>
-                <td>${this.escapeHtml(product.category)}</td>
-                <td>${new Date(product.date).toLocaleDateString('ru-RU')}</td>
-                <td>
-                    <button class="delete-btn" onclick="productManager.deleteProduct(${product.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = sortedProducts.length === 0 ? 
+            '<tr><td colspan="5" style="text-align: center; color: #64748B;">Нет данных</td></tr>' :
+            sortedProducts.map(p => `
+                <tr>
+                    <td>${this.escapeHtml(p.name)}</td>
+                    <td class="number">${p.price.toLocaleString()}₽</td>
+                    <td>${this.escapeHtml(p.category)}</td>
+                    <td>${new Date(p.date).toLocaleDateString('ru-RU')}</td>
+                    <td>
+                        <button class="delete-btn" onclick="productManager.deleteProduct(${p.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
     }
 
     escapeHtml(unsafe) {
@@ -977,29 +557,22 @@ class ProductManager {
             return;
         }
 
-        const headers = ['Название', 'Цена', 'Категория', 'Дата', 'Маркетплейс'];
+        const headers = ['Название', 'Цена', 'Категория', 'Дата'];
         const csvData = [
             headers.join(','),
-            ...this.products.map(product => [
-                `"${product.name.replace(/"/g, '""')}"`,
-                product.price,
-                `"${product.category}"`,
-                `"${new Date(product.date).toLocaleDateString('ru-RU')}"`,
-                `"${product.marketplace}"`
+            ...this.products.map(p => [
+                `"${p.name.replace(/"/g, '""')}"`,
+                p.price,
+                `"${p.category}"`,
+                `"${new Date(p.date).toLocaleDateString('ru-RU')}"`
             ].join(','))
         ].join('\n');
 
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `products_export_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `products_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
-        document.body.removeChild(link);
     }
 
     clearAllData() {
@@ -1013,7 +586,7 @@ class ProductManager {
     }
 }
 
-// Функции навигации
+// Глобальные функции навигации
 function showMainScreen() {
     document.getElementById('mainScreen').classList.remove('hidden');
     document.getElementById('addProductScreen').classList.add('hidden');
@@ -1025,47 +598,23 @@ function showAddProductScreen() {
     document.getElementById('mainScreen').classList.add('hidden');
     document.getElementById('addProductScreen').classList.remove('hidden');
     document.getElementById('analyticsScreen').classList.add('hidden');
-    
-    // Скрываем сообщение об успехе при переходе
-    const successMessage = document.getElementById('successMessage');
-    if (successMessage) successMessage.classList.add('hidden');
-    
-    // Сбрасываем форму
-    const addProductForm = document.getElementById('addProductForm');
-    if (addProductForm) addProductForm.reset();
-    
-    // Очищаем предпросмотр категории
-    const preview = document.getElementById('autoDetectionPreview');
-    if (preview) preview.classList.add('hidden');
 }
 
 function showAnalyticsScreen() {
     document.getElementById('mainScreen').classList.add('hidden');
     document.getElementById('addProductScreen').classList.add('hidden');
     document.getElementById('analyticsScreen').classList.remove('hidden');
-    
-    // Принудительно обновляем аналитику при открытии экрана
-    setTimeout(() => {
-        productManager.updateAnalytics();
-    }, 100);
+    productManager.updateAnalytics();
 }
 
 function switchTab(tabName) {
-    // Убираем активный класс со всех вкладок и контента
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    // Добавляем активный класс выбранной вкладке и контенту
-    const tabElement = document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`);
-    const contentElement = document.getElementById(`${tabName}Tab`);
+    document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+    document.getElementById(`${tabName}Tab`).classList.add('active');
     
-    if (tabElement) tabElement.classList.add('active');
-    if (contentElement) contentElement.classList.add('active');
-    
-    // Обновляем аналитику при переключении вкладок
-    setTimeout(() => {
-        productManager.updateAnalytics();
-    }, 50);
+    productManager.updateAnalytics();
 }
 
 function exportToCSV() {
@@ -1076,5 +625,5 @@ function clearAllData() {
     productManager.clearAllData();
 }
 
-// Инициализация приложения
+// Инициализация при загрузке страницы
 const productManager = new ProductManager();
