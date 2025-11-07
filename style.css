@@ -33,12 +33,18 @@ body {
 
 .nav-brand h2 {
     color: #6366f1;
+    font-weight: 600;
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+.user-welcome {
+    color: #64748b;
+    font-size: 0.9rem;
 }
 
 /* Кнопки */
@@ -93,12 +99,13 @@ body {
     background: #10b981;
     color: white;
     padding: 0.5rem 1rem;
+    font-size: 0.875rem;
 }
 
 /* Главный контент */
 .main-content {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -156,7 +163,7 @@ body {
     color: #64748b;
 }
 
-/* Статистика */
+/* Быстрая статистика */
 .quick-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -361,10 +368,59 @@ body {
     padding-bottom: 0.5rem;
 }
 
+/* Табы аналитики */
+.analytics-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+}
+
+.tab-btn.active {
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Графики */
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -373,17 +429,26 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    border: 1px solid #f1f5f9;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .chart-card h4 {
     margin-bottom: 1rem;
     color: #1e293b;
     text-align: center;
+    font-size: 1.1rem;
 }
 
 .chart-card canvas {
     max-height: 300px;
+    width: 100% !important;
 }
 
 /* Таблицы */
@@ -501,6 +566,14 @@ tr:hover {
         padding: 1rem;
     }
     
+    .analytics-tabs {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        justify-content: center;
+    }
+    
     .charts-grid {
         grid-template-columns: 1fr;
     }
@@ -523,6 +596,10 @@ tr:hover {
         gap: 1rem;
         align-items: flex-start;
     }
+    
+    .chart-card {
+        padding: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -535,10 +612,6 @@ tr:hover {
         padding: 1.5rem;
     }
     
-    .chart-card {
-        padding: 1rem;
-    }
-    
     .product-item {
         flex-direction: column;
         align-items: flex-start;
@@ -548,4 +621,67 @@ tr:hover {
     .product-price {
         align-self: flex-end;
     }
+    
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Специальные стили для улучшения UX */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.no-data {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    padding: 3rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 2px dashed #e2e8f0;
+}
+
+/* Анимации для лучшего пользовательского опыта */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Стили для состояний загрузки */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #6366f1;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
