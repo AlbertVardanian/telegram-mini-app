@@ -1,3 +1,19 @@
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,245 +21,476 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
 }
 
 .page {
     display: none;
-    max-width: 1200px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    overflow: hidden;
+    min-height: 100vh;
 }
 
 .page.active {
     display: block;
 }
 
-/* Страница входа */
-.login-container {
-    padding: 60px 40px;
-    text-align: center;
-}
-
-.login-container h2 {
-    margin-bottom: 30px;
-    color: #333;
-    font-size: 2em;
-}
-
-#loginForm {
-    max-width: 300px;
-    margin: 0 auto;
-}
-
-#loginForm input {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-}
-
-#loginForm input:focus {
-    border-color: #667eea;
-    outline: none;
-}
-
-/* Общие стили */
-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
+/* Навигация */
+.navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: var(--shadow);
 }
 
-header h1, header h2 {
-    margin: 0;
+.nav-brand h2 {
+    color: var(--primary);
+    font-weight: 600;
 }
 
-.main-actions {
-    padding: 40px;
+.nav-actions {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
     align-items: center;
+    gap: 1rem;
+}
+
+.user-welcome {
+    color: var(--text-light);
+    font-size: 0.9rem;
 }
 
 /* Кнопки */
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.btn {
+    padding: 0.5rem 1rem;
     border: none;
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 200px;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    background: var(--primary-dark);
+    box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
-    background: #6c757d;
+    background: var(--secondary);
     color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
 }
 
-.btn-secondary:hover {
-    background: #545b62;
+.btn-back {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
 }
 
-/* Форма добавления товара */
-#productForm {
-    padding: 30px;
-    max-width: 500px;
+.btn-back:hover {
+    background: var(--background);
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.btn-export {
+    background: var(--success);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Главный контент */
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
+.hero-section {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.hero-section h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-section p {
+    color: var(--text-light);
+    font-size: 1.125rem;
+}
+
+/* Карточки действий */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.action-card {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.action-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.action-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.action-card p {
+    color: var(--text-light);
+}
+
+/* Быстрая статистика */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+/* Страница входа */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+}
+
+.auth-card {
+    background: var(--surface);
+    padding: 3rem;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auth-demo {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.auth-demo p {
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+/* Формы */
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.product-form {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
 }
 
-.form-group select,
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: border-color 0.3s;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
 }
 
-.form-group select:focus,
-.form-group input:focus {
-    border-color: #667eea;
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-actions {
+    text-align: center;
 }
 
 /* Аналитика */
-.analytics-controls {
-    padding: 20px;
-    text-align: center;
-    border-bottom: 1px solid #eee;
+.analytics-section {
+    margin-bottom: 3rem;
 }
 
+.analytics-section h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+/* Графики */
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.chart-container {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.chart-card {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
 }
 
-.chart-container h3 {
-    margin-bottom: 15px;
+.chart-card h4 {
+    margin-bottom: 1rem;
+    color: var(--text);
     text-align: center;
-    color: #333;
 }
 
-.chart-container canvas {
+.chart-card canvas {
     max-height: 300px;
 }
 
-.tables-section {
-    padding: 20px;
-    display: grid;
-    gap: 30px;
+/* Таблицы */
+.tables-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.table-card {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.table-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.table-header h4 {
+    color: var(--text);
 }
 
 .table-container {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.table-container h3 {
-    margin-bottom: 15px;
-    text-align: center;
-    color: #333;
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 15px;
 }
 
 th, td {
-    padding: 12px;
+    padding: 0.75rem 1rem;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border);
 }
 
 th {
-    background-color: #667eea;
-    color: white;
-    font-weight: bold;
+    background: var(--background);
+    font-weight: 600;
+    color: var(--text);
 }
 
 tr:hover {
-    background-color: #f5f5f5;
+    background: var(--background);
 }
 
-.export-btn {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s;
+/* Поля ввода с плавающими лейблами */
+.input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
 }
 
-.export-btn:hover {
-    background: #218838;
+.input-group input {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    background: transparent;
+    transition: all 0.2s;
 }
 
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-group label {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    color: var(--text-light);
+    transition: all 0.2s;
+    pointer-events: none;
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+    top: -0.5rem;
+    left: 0.5rem;
+    font-size: 0.75rem;
+    background: var(--surface);
+    padding: 0 0.5rem;
+    color: var(--primary);
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
+    .navbar {
+        padding: 1rem;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
     .charts-grid {
         grid-template-columns: 1fr;
     }
     
-    .main-actions {
-        padding: 20px;
+    .action-grid {
+        grid-template-columns: 1fr;
     }
     
-    header {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .table-header {
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .product-form {
+        padding: 1.5rem;
+    }
+    
+    .chart-card {
+        padding: 1rem;
     }
 }
