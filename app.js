@@ -1,6 +1,7 @@
 class ProductAnalytics {
     constructor() {
-        this.products = JSON.parse(localStorage.getItem('products')) || [];
+        this.users = JSON.parse(localStorage.getItem('users')) || [];
+        this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         this.charts = {};
         this.init();
     }
@@ -8,13 +9,85 @@ class ProductAnalytics {
     init() {
         this.setupEventListeners();
         this.checkAuth();
-        this.updateQuickStats();
+        if (this.currentUser) {
+            this.updateQuickStats();
+            this.updateRecentProducts();
+        }
+        
+        // Создаем демо-аккаунт если нет пользователей
+        if (this.users.length === 0) {
+            this.createDemoAccount();
+        }
+    }
+
+    createDemoAccount() {
+        const demoUser = {
+            id: this.generateId(),
+            username: 'demo',
+            email: 'demo@example.com',
+            password: 'demo123',
+            createdAt: new Date().toISOString(),
+            products: [
+                {
+                    id: this.generateId(),
+                    marketplace: 'wildberries',
+                    category: 'electronics',
+                    name: 'Смартфон Samsung Galaxy S23',
+                    price: 74990,
+                    date: new Date('2024-01-15').toISOString(),
+                    purchaseDate: '2024-01-15',
+                    notes: 'Покупка по акции'
+                },
+                {
+                    id: this.generateId(),
+                    marketplace: 'ozon',
+                    category: 'books',
+                    name: 'Книга "JavaScript для начинающих"',
+                    price: 1560,
+                    date: new Date('2024-01-20').toISOString(),
+                    purchaseDate: '2024-01-18',
+                    notes: 'Для изучения программирования'
+                },
+                {
+                    id: this.generateId(),
+                    marketplace: 'yandex',
+                    category: 'clothing',
+                    name: 'Футболка хлопковая черная',
+                    price: 1299,
+                    date: new Date('2024-02-01').toISOString(),
+                    purchaseDate: '2024-01-28',
+                    notes: 'Размер M'
+                }
+            ]
+        };
+        
+        this.users.push(demoUser);
+        this.saveUsers();
+    }
+
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 
     setupEventListeners() {
-        // Навигация
+        // Навигация между страницами аутентификации
+        document.getElementById('showRegister').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showPage('registerPage');
+        });
+        
+        document.getElementById('showLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showPage('loginPage');
+        });
+
+        // Формы аутентификации
         document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+        document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
         document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+        
+        // Демо-вход
+        document.getElementById('demoLoginBtn').addEventListener('click', () => this.demoLogin());
         
         // Карточки действий
         document.getElementById('addProductBtn').addEventListener('click', () => this.showPage('addProductPage'));
@@ -27,10 +100,12 @@ class ProductAnalytics {
         document.getElementById('backFromAddBtn').addEventListener('click', () => {
             this.showPage('mainPage');
             this.updateQuickStats();
+            this.updateRecentProducts();
         });
         document.getElementById('backFromAnalyticsBtn').addEventListener('click', () => {
             this.showPage('mainPage');
             this.updateQuickStats();
+            this.updateRecentProducts();
         });
         
         // Форма товара
@@ -41,35 +116,127 @@ class ProductAnalytics {
         document.querySelectorAll('.export-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.exportTable(e.target.closest('.export-btn').dataset.table));
         });
+
+        // Устанавливаем сегодняшнюю дату как значение по умолчанию для даты покупки
+        const purchaseDateInput = document.getElementById('purchaseDate');
+        if (purchaseDateInput) {
+            purchaseDateInput.valueAsDate = new Date();
+        }
     }
 
     checkAuth() {
-        const isLoggedIn = localStorage.getItem('isLoggedIn');
-        if (isLoggedIn) {
+        if (this.currentUser) {
             this.showPage('mainPage');
+            this.updateUserWelcome();
         } else {
             this.showPage('loginPage');
         }
     }
 
+    handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+        // Валидация
+        if (password !== confirmPassword) {
+            this.showNotification('Пароли не совпадают!', 'error');
+            return;
+        }
+
+        if (this.users.find(u => u.username === username)) {
+            this.showNotification('Пользователь с таким именем уже существует!', 'error');
+            return;
+        }
+
+        if (this.users.find(u => u.email === email)) {
+            this.showNotification('Пользователь с таким email уже существует!', 'error');
+            return;
+        }
+
+        // Создание нового пользователя
+        const newUser = {
+            id: this.generateId(),
+            username,
+            email,
+            password, // В реальном приложении пароль должен быть хеширован!
+            createdAt: new Date().toISOString(),
+            products: []
+        };
+
+        this.users.push(newUser);
+        this.saveUsers();
+        
+        this.showNotification('Аккаунт успешно создан! Теперь вы можете войти.', 'success');
+        this.showPage('loginPage');
+        document.getElementById('registerForm').reset();
+    }
+
     handleLogin(e) {
         e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
         
-        // Простая аутентификация
-        if (username && password) {
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('username', username);
+        const user = this.users.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+            this.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
             this.showPage('mainPage');
             this.updateQuickStats();
+            this.updateRecentProducts();
+            this.updateUserWelcome();
+            this.showNotification(`Добро пожаловать, ${username}!`, 'success');
+        } else {
+            this.showNotification('Неверное имя пользователя или пароль!', 'error');
         }
     }
 
+    demoLogin() {
+        document.getElementById('loginUsername').value = 'demo';
+        document.getElementById('loginPassword').value = 'demo123';
+        this.handleLogin(new Event('submit'));
+    }
+
     logout() {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('username');
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
         this.showPage('loginPage');
+        document.getElementById('loginForm').reset();
+        this.showNotification('Вы вышли из системы', 'info');
+    }
+
+    updateUserWelcome() {
+        const welcomeElement = document.getElementById('userWelcome');
+        if (welcomeElement && this.currentUser) {
+            welcomeElement.textContent = `Добро пожаловать, ${this.currentUser.username}!`;
+        }
+    }
+
+    getCurrentUserProducts() {
+        if (!this.currentUser) return [];
+        
+        // Находим актуального пользователя в базе
+        const user = this.users.find(u => u.id === this.currentUser.id);
+        return user ? (user.products || []) : [];
+    }
+
+    saveUserProducts(products) {
+        if (!this.currentUser) return;
+        
+        const userIndex = this.users.findIndex(u => u.id === this.currentUser.id);
+        if (userIndex !== -1) {
+            this.users[userIndex].products = products;
+            this.currentUser.products = products; // Обновляем текущего пользователя
+            this.saveUsers();
+            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+        }
+    }
+
+    saveUsers() {
+        localStorage.setItem('users', JSON.stringify(this.users));
     }
 
     showPage(pageId) {
@@ -82,43 +249,100 @@ class ProductAnalytics {
     addProduct(e) {
         e.preventDefault();
         
+        if (!this.currentUser) {
+            this.showNotification('Ошибка: пользователь не авторизован', 'error');
+            return;
+        }
+        
         const product = {
-            id: Date.now(),
+            id: this.generateId(),
             marketplace: document.getElementById('marketplace').value,
             category: document.getElementById('category').value,
             name: document.getElementById('productName').value,
             price: parseFloat(document.getElementById('price').value),
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            purchaseDate: document.getElementById('purchaseDate').value || new Date().toISOString().split('T')[0],
+            notes: document.getElementById('notes').value
         };
 
-        this.products.push(product);
-        this.saveProducts();
+        const userProducts = this.getCurrentUserProducts();
+        userProducts.push(product);
+        this.saveUserProducts(userProducts);
+        
         document.getElementById('productForm').reset();
+        // Сбрасываем дату покупки на сегодня
+        document.getElementById('purchaseDate').valueAsDate = new Date();
         
         this.showPage('mainPage');
         this.updateQuickStats();
-        
+        this.updateRecentProducts();
         this.showNotification('Товар успешно добавлен!', 'success');
     }
 
-    saveProducts() {
-        localStorage.setItem('products', JSON.stringify(this.products));
-    }
-
     updateQuickStats() {
-        const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
+        const totalProducts = products.length;
+        const totalValue = products.reduce((sum, product) => sum + product.price, 0);
         const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
+        const userSince = this.currentUser.createdAt ? new Date(this.currentUser.createdAt).toLocaleDateString('ru-RU') : '-';
 
         document.getElementById('totalProducts').textContent = totalProducts;
         document.getElementById('totalValue').textContent = `${totalValue.toFixed(2)}₽`;
         document.getElementById('avgPrice').textContent = `${avgPrice.toFixed(2)}₽`;
+        document.getElementById('userSince').textContent = userSince;
+    }
+
+    updateRecentProducts() {
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
+        const recentProducts = products
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5);
+        
+        const recentProductsList = document.getElementById('recentProductsList');
+        
+        if (recentProducts.length === 0) {
+            recentProductsList.innerHTML = '<p style="text-align: center; color: var(--text-light);">Нет добавленных товаров</p>';
+            return;
+        }
+        
+        recentProductsList.innerHTML = recentProducts.map(product => `
+            <div class="product-item">
+                <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-details">
+                        ${this.formatMarketplaceName(product.marketplace)} • ${this.formatCategoryName(product.category)}
+                        ${product.purchaseDate ? ` • ${new Date(product.purchaseDate).toLocaleDateString('ru-RU')}` : ''}
+                    </div>
+                </div>
+                <div class="product-price">${product.price.toFixed(2)}₽</div>
+            </div>
+        `).join('');
     }
 
     updateAnalytics() {
+        if (!this.currentUser) return;
+        
+        this.updateAnalyticsStats();
         this.destroyCharts();
         this.updateCharts();
         this.updateTables();
+    }
+
+    updateAnalyticsStats() {
+        const products = this.getCurrentUserProducts();
+        const totalProducts = products.length;
+        const totalValue = products.reduce((sum, product) => sum + product.price, 0);
+        const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
+        const uniqueMarketplaces = new Set(products.map(p => p.marketplace)).size;
+
+        document.getElementById('analyticsTotalProducts').textContent = totalProducts;
+        document.getElementById('analyticsTotalValue').textContent = `${totalValue.toFixed(2)}₽`;
+        document.getElementById('analyticsAvgPrice').textContent = `${avgPrice.toFixed(2)}₽`;
+        document.getElementById('analyticsMarketplaces').textContent = uniqueMarketplaces;
     }
 
     destroyCharts() {
@@ -129,6 +353,12 @@ class ProductAnalytics {
     }
 
     updateCharts() {
+        const products = this.getCurrentUserProducts();
+        if (products.length === 0) {
+            this.showNotification('Нет данных для анализа. Добавьте товары!', 'info');
+            return;
+        }
+
         this.createMarketplaceChart();
         this.createCategoryChart();
         this.createAvgPriceChart();
@@ -140,7 +370,8 @@ class ProductAnalytics {
     }
 
     createMarketplaceChart() {
-        const data = this.getCountByField('marketplace');
+        const products = this.getCurrentUserProducts();
+        const data = this.getCountByField(products, 'marketplace');
         const ctx = document.getElementById('marketplaceChart').getContext('2d');
         
         this.charts.marketplace = new Chart(ctx, {
@@ -150,7 +381,7 @@ class ProductAnalytics {
                 datasets: [{
                     data: Object.values(data),
                     backgroundColor: [
-                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'
+                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
                     ],
                     borderWidth: 2,
                     borderColor: '#fff'
@@ -168,7 +399,8 @@ class ProductAnalytics {
     }
 
     createCategoryChart() {
-        const data = this.getCountByField('category');
+        const products = this.getCurrentUserProducts();
+        const data = this.getCountByField(products, 'category');
         const ctx = document.getElementById('categoryChart').getContext('2d');
         
         this.charts.category = new Chart(ctx, {
@@ -179,7 +411,8 @@ class ProductAnalytics {
                     data: Object.values(data),
                     backgroundColor: [
                         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
-                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
+                        '#A29BFE', '#FD79A8', '#E17055', '#00CEC9'
                     ]
                 }]
             }
@@ -187,7 +420,8 @@ class ProductAnalytics {
     }
 
     createAvgPriceChart() {
-        const data = this.getAvgPriceByMarketplace();
+        const products = this.getCurrentUserProducts();
+        const data = this.getAvgPriceByMarketplace(products);
         const ctx = document.getElementById('avgPriceChart').getContext('2d');
         
         this.charts.avgPrice = new Chart(ctx, {
@@ -214,7 +448,8 @@ class ProductAnalytics {
     }
 
     createMonthlyChart() {
-        const data = this.getMonthlyData();
+        const products = this.getCurrentUserProducts();
+        const data = this.getMonthlyData(products);
         const ctx = document.getElementById('monthlyChart').getContext('2d');
         
         this.charts.monthly = new Chart(ctx, {
@@ -234,7 +469,8 @@ class ProductAnalytics {
     }
 
     createTopProductsChart() {
-        const topProducts = this.products
+        const products = this.getCurrentUserProducts();
+        const topProducts = products
             .sort((a, b) => b.price - a.price)
             .slice(0, 5);
         
@@ -243,7 +479,7 @@ class ProductAnalytics {
         this.charts.topProducts = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: topProducts.map(p => this.truncateText(p.name, 15)),
+                labels: topProducts.map(p => this.truncateText(p.name, 20)),
                 datasets: [{
                     label: 'Цена (₽)',
                     data: topProducts.map(p => p.price),
@@ -258,7 +494,8 @@ class ProductAnalytics {
     }
 
     createCategoryValueChart() {
-        const data = this.getTotalValueByCategory();
+        const products = this.getCurrentUserProducts();
+        const data = this.getTotalValueByCategory(products);
         const ctx = document.getElementById('categoryValueChart').getContext('2d');
         
         this.charts.categoryValue = new Chart(ctx, {
@@ -269,7 +506,8 @@ class ProductAnalytics {
                     data: Object.values(data),
                     backgroundColor: [
                         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
-                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
+                        '#A29BFE', '#FD79A8', '#E17055', '#00CEC9'
                     ]
                 }]
             }
@@ -277,7 +515,8 @@ class ProductAnalytics {
     }
 
     createTrendChart() {
-        const trendData = this.getTrendData();
+        const products = this.getCurrentUserProducts();
+        const trendData = this.getTrendData(products);
         const ctx = document.getElementById('trendChart').getContext('2d');
         
         this.charts.trend = new Chart(ctx, {
@@ -297,7 +536,8 @@ class ProductAnalytics {
     }
 
     createComparisonChart() {
-        const comparisonData = this.getComparisonData();
+        const products = this.getCurrentUserProducts();
+        const comparisonData = this.getComparisonData(products);
         const ctx = document.getElementById('comparisonChart').getContext('2d');
         
         this.charts.comparison = new Chart(ctx, {
@@ -329,8 +569,9 @@ class ProductAnalytics {
     }
 
     updateMarketplaceTable() {
+        const products = this.getCurrentUserProducts();
         const tableBody = document.querySelector('#marketplaceTable tbody');
-        const stats = this.getMarketplaceStats();
+        const stats = this.getMarketplaceStats(products);
         
         tableBody.innerHTML = Object.entries(stats).map(([marketplace, data]) => `
             <tr>
@@ -343,8 +584,9 @@ class ProductAnalytics {
     }
 
     updateCategoryTable() {
+        const products = this.getCurrentUserProducts();
         const tableBody = document.querySelector('#categoryTable tbody');
-        const stats = this.getCategoryStats();
+        const stats = this.getCategoryStats(products);
         
         tableBody.innerHTML = Object.entries(stats).map(([category, data]) => `
             <tr>
@@ -357,9 +599,10 @@ class ProductAnalytics {
     }
 
     updateProductsTable() {
+        const products = this.getCurrentUserProducts();
         const tableBody = document.querySelector('#productsTable tbody');
         
-        tableBody.innerHTML = this.products
+        tableBody.innerHTML = products
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map(product => `
             <tr>
@@ -368,20 +611,21 @@ class ProductAnalytics {
                 <td>${this.formatCategoryName(product.category)}</td>
                 <td>${product.name}</td>
                 <td>${product.price.toFixed(2)}₽</td>
+                <td>${product.notes || '-'}</td>
             </tr>
         `).join('');
     }
 
     // Вспомогательные методы для анализа данных
-    getCountByField(field) {
-        return this.products.reduce((acc, product) => {
+    getCountByField(products, field) {
+        return products.reduce((acc, product) => {
             acc[product[field]] = (acc[product[field]] || 0) + 1;
             return acc;
         }, {});
     }
 
-    getAvgPriceByMarketplace() {
-        const groups = this.products.reduce((acc, product) => {
+    getAvgPriceByMarketplace(products) {
+        const groups = products.reduce((acc, product) => {
             if (!acc[product.marketplace]) {
                 acc[product.marketplace] = { total: 0, count: 0 };
             }
@@ -391,13 +635,13 @@ class ProductAnalytics {
         }, {});
 
         return Object.entries(groups).reduce((acc, [marketplace, data]) => {
-            acc[marketplace] = data.total / data.count;
+            acc[marketplace] = data.count > 0 ? data.total / data.count : 0;
             return acc;
         }, {});
     }
 
-    getMonthlyData() {
-        return this.products.reduce((acc, product) => {
+    getMonthlyData(products) {
+        return products.reduce((acc, product) => {
             const month = new Date(product.date).toLocaleDateString('ru-RU', { 
                 year: 'numeric', 
                 month: 'short' 
@@ -407,15 +651,15 @@ class ProductAnalytics {
         }, {});
     }
 
-    getTotalValueByCategory() {
-        return this.products.reduce((acc, product) => {
+    getTotalValueByCategory(products) {
+        return products.reduce((acc, product) => {
             acc[product.category] = (acc[product.category] || 0) + product.price;
             return acc;
         }, {});
     }
 
-    getTrendData() {
-        const dailyData = this.products.reduce((acc, product) => {
+    getTrendData(products) {
+        const dailyData = products.reduce((acc, product) => {
             const date = new Date(product.date).toLocaleDateString('ru-RU');
             if (!acc[date]) {
                 acc[date] = 0;
@@ -431,8 +675,8 @@ class ProductAnalytics {
         };
     }
 
-    getComparisonData() {
-        const data = this.products.reduce((acc, product) => {
+    getComparisonData(products) {
+        const data = products.reduce((acc, product) => {
             if (!acc[product.marketplace]) {
                 acc[product.marketplace] = { count: 0, value: 0 };
             }
@@ -453,8 +697,8 @@ class ProductAnalytics {
         };
     }
 
-    getMarketplaceStats() {
-        const stats = this.products.reduce((acc, product) => {
+    getMarketplaceStats(products) {
+        const stats = products.reduce((acc, product) => {
             if (!acc[product.marketplace]) {
                 acc[product.marketplace] = { count: 0, total: 0 };
             }
@@ -464,14 +708,14 @@ class ProductAnalytics {
         }, {});
 
         Object.keys(stats).forEach(mp => {
-            stats[mp].average = stats[mp].total / stats[mp].count;
+            stats[mp].average = stats[mp].count > 0 ? stats[mp].total / stats[mp].count : 0;
         });
 
         return stats;
     }
 
-    getCategoryStats() {
-        const stats = this.products.reduce((acc, product) => {
+    getCategoryStats(products) {
+        const stats = products.reduce((acc, product) => {
             if (!acc[product.category]) {
                 acc[product.category] = { count: 0, total: 0 };
             }
@@ -481,7 +725,7 @@ class ProductAnalytics {
         }, {});
 
         Object.keys(stats).forEach(category => {
-            stats[category].average = stats[category].total / stats[category].count;
+            stats[category].average = stats[category].count > 0 ? stats[category].total / stats[category].count : 0;
         });
 
         return stats;
@@ -493,7 +737,10 @@ class ProductAnalytics {
             'ozon': 'Ozon',
             'yandex': 'Яндекс Маркет',
             'aliexpress': 'AliExpress',
-            'amazon': 'Amazon'
+            'amazon': 'Amazon',
+            'sbermegamarket': 'СберМегаМаркет',
+            'citilink': 'Citilink',
+            'dns': 'DNS'
         };
         return names[marketplace] || marketplace;
     }
@@ -507,7 +754,10 @@ class ProductAnalytics {
             'sports': 'Спорт',
             'beauty': 'Красота',
             'toys': 'Игрушки',
-            'food': 'Продукты питания'
+            'food': 'Продукты питания',
+            'auto': 'Автотовары',
+            'health': 'Здоровье',
+            'other': 'Другое'
         };
         return names[category] || category;
     }
@@ -522,11 +772,14 @@ class ProductAnalytics {
         const ws = XLSX.utils.table_to_sheet(table);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Таблица');
-        XLSX.writeFile(wb, `${tableId}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `${tableId}_${this.currentUser.username}_${new Date().toISOString().split('T')[0]}.xlsx`);
         this.showNotification('Таблица экспортирована в Excel', 'success');
     }
 
     exportAllData() {
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
         const wb = XLSX.utils.book_new();
         
         // Экспорт таблиц
@@ -538,37 +791,30 @@ class ProductAnalytics {
         });
 
         // Экспорт сырых данных
-        const rawData = this.products.map(product => ({
-            Дата: new Date(product.date).toLocaleDateString('ru-RU'),
-            Маркетплейс: this.formatMarketplaceName(product.marketplace),
-            Категория: this.formatCategoryName(product.category),
-            Товар: product.name,
-            Цена: product.price,
-            'Дата добавления': new Date(product.date).toISOString()
+        const rawData = products.map(product => ({
+            'Дата добавления': new Date(product.date).toLocaleDateString('ru-RU'),
+            'Дата покупки': product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString('ru-RU') : '-',
+            'Маркетплейс': this.formatMarketplaceName(product.marketplace),
+            'Категория': this.formatCategoryName(product.category),
+            'Товар': product.name,
+            'Цена': product.price,
+            'Примечания': product.notes || ''
         }));
         
         const rawWs = XLSX.utils.json_to_sheet(rawData);
         XLSX.utils.book_append_sheet(wb, rawWs, 'Все данные');
         
-        XLSX.writeFile(wb, `product_analytics_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `product_analytics_${this.currentUser.username}_${new Date().toISOString().split('T')[0]}.xlsx`);
         this.showNotification('Все данные экспортированы в Excel', 'success');
     }
 
     showNotification(message, type = 'info') {
-        // Создаем простое уведомление
+        // Удаляем существующие уведомления
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
+
         const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            background: ${type === 'success' ? '#10b981' : '#6366f1'};
-            color: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            animation: slideIn 0.3s ease-out;
-        `;
+        notification.className = `notification ${type}`;
         notification.textContent = message;
         
         document.body.appendChild(notification);
@@ -576,38 +822,13 @@ class ProductAnalytics {
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease-in';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
             }, 300);
-        }, 3000);
+        }, 4000);
     }
 }
-
-// Добавляем стили для анимаций уведомлений
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
