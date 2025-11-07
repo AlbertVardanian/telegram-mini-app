@@ -409,4 +409,207 @@ class ProductAnalytics {
 
     getTotalValueByCategory() {
         return this.products.reduce((acc, product) => {
-            acc
+            acc[product.category] = (acc[product.category] || 0) + product.price;
+            return acc;
+        }, {});
+    }
+
+    getTrendData() {
+        const dailyData = this.products.reduce((acc, product) => {
+            const date = new Date(product.date).toLocaleDateString('ru-RU');
+            if (!acc[date]) {
+                acc[date] = 0;
+            }
+            acc[date] += product.price;
+            return acc;
+        }, {});
+
+        const sortedDates = Object.keys(dailyData).sort();
+        return {
+            dates: sortedDates,
+            amounts: sortedDates.map(date => dailyData[date])
+        };
+    }
+
+    getComparisonData() {
+        const data = this.products.reduce((acc, product) => {
+            if (!acc[product.marketplace]) {
+                acc[product.marketplace] = { count: 0, value: 0 };
+            }
+            acc[product.marketplace].count += 1;
+            acc[product.marketplace].value += product.price;
+            return acc;
+        }, {});
+
+        return {
+            count: Object.entries(data).reduce((acc, [mp, d]) => {
+                acc[mp] = d.count;
+                return acc;
+            }, {}),
+            value: Object.entries(data).reduce((acc, [mp, d]) => {
+                acc[mp] = d.value;
+                return acc;
+            }, {})
+        };
+    }
+
+    getMarketplaceStats() {
+        const stats = this.products.reduce((acc, product) => {
+            if (!acc[product.marketplace]) {
+                acc[product.marketplace] = { count: 0, total: 0 };
+            }
+            acc[product.marketplace].count += 1;
+            acc[product.marketplace].total += product.price;
+            return acc;
+        }, {});
+
+        Object.keys(stats).forEach(mp => {
+            stats[mp].average = stats[mp].total / stats[mp].count;
+        });
+
+        return stats;
+    }
+
+    getCategoryStats() {
+        const stats = this.products.reduce((acc, product) => {
+            if (!acc[product.category]) {
+                acc[product.category] = { count: 0, total: 0 };
+            }
+            acc[product.category].count += 1;
+            acc[product.category].total += product.price;
+            return acc;
+        }, {});
+
+        Object.keys(stats).forEach(category => {
+            stats[category].average = stats[category].total / stats[category].count;
+        });
+
+        return stats;
+    }
+
+    formatMarketplaceName(marketplace) {
+        const names = {
+            'wildberries': 'Wildberries',
+            'ozon': 'Ozon',
+            'yandex': 'Яндекс Маркет',
+            'aliexpress': 'AliExpress',
+            'amazon': 'Amazon'
+        };
+        return names[marketplace] || marketplace;
+    }
+
+    formatCategoryName(category) {
+        const names = {
+            'electronics': 'Электроника',
+            'clothing': 'Одежда',
+            'books': 'Книги',
+            'home': 'Дом и сад',
+            'sports': 'Спорт',
+            'beauty': 'Красота',
+            'toys': 'Игрушки',
+            'food': 'Продукты питания'
+        };
+        return names[category] || category;
+    }
+
+    truncateText(text, maxLength) {
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    }
+
+    // Методы экспорта
+    exportTable(tableId) {
+        const table = document.getElementById(tableId);
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Таблица');
+        XLSX.writeFile(wb, `${tableId}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.showNotification('Таблица экспортирована в Excel', 'success');
+    }
+
+    exportAllData() {
+        const wb = XLSX.utils.book_new();
+        
+        // Экспорт таблиц
+        const tables = ['marketplaceTable', 'categoryTable', 'productsTable'];
+        tables.forEach(tableId => {
+            const table = document.getElementById(tableId);
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, tableId.replace('Table', ''));
+        });
+
+        // Экспорт сырых данных
+        const rawData = this.products.map(product => ({
+            Дата: new Date(product.date).toLocaleDateString('ru-RU'),
+            Маркетплейс: this.formatMarketplaceName(product.marketplace),
+            Категория: this.formatCategoryName(product.category),
+            Товар: product.name,
+            Цена: product.price,
+            'Дата добавления': new Date(product.date).toISOString()
+        }));
+        
+        const rawWs = XLSX.utils.json_to_sheet(rawData);
+        XLSX.utils.book_append_sheet(wb, rawWs, 'Все данные');
+        
+        XLSX.writeFile(wb, `product_analytics_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.showNotification('Все данные экспортированы в Excel', 'success');
+    }
+
+    showNotification(message, type = 'info') {
+        // Создаем простое уведомление
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: ${type === 'success' ? '#10b981' : '#6366f1'};
+            color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+}
+
+// Добавляем стили для анимаций уведомлений
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Инициализация приложения
+document.addEventListener('DOMContentLoaded', () => {
+    new ProductAnalytics();
+});
