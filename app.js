@@ -2,6 +2,7 @@ class ProductAnalytics {
     constructor() {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
         this.charts = {};
+        this.currentTab = 'overview';
         this.init();
     }
 
@@ -53,6 +54,26 @@ class ProductAnalytics {
                 date: new Date('2024-02-01').toISOString(),
                 purchaseDate: '2024-01-28',
                 notes: 'Размер M'
+            },
+            {
+                id: this.generateId(),
+                marketplace: 'aliexpress',
+                category: 'electronics',
+                name: 'Наушники беспроводные',
+                price: 3499,
+                date: new Date('2024-02-10').toISOString(),
+                purchaseDate: '2024-02-08',
+                notes: 'Доставка 2 недели'
+            },
+            {
+                id: this.generateId(),
+                marketplace: 'wildberries',
+                category: 'home',
+                name: 'Набор кухонных ножей',
+                price: 4590,
+                date: new Date('2024-02-15').toISOString(),
+                purchaseDate: '2024-02-12',
+                notes: 'Отличное качество'
             }
         ];
         
@@ -107,7 +128,59 @@ class ProductAnalytics {
             });
         });
         
+        // Табы аналитики
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-tab');
+                this.switchTab(tabName);
+            });
+        });
+        
         console.log('Event listeners setup complete');
+    }
+
+    switchTab(tabName) {
+        // Убираем активный класс у всех кнопок и контента
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Добавляем активный класс выбранной кнопке и контенту
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(`${tabName}Tab`).classList.add('active');
+        
+        this.currentTab = tabName;
+        
+        // Обновляем графики для выбранной вкладки
+        this.updateTabCharts(tabName);
+    }
+
+    updateTabCharts(tabName) {
+        this.destroyCharts();
+        
+        switch(tabName) {
+            case 'overview':
+                this.createOverviewCharts();
+                break;
+            case 'marketplaces':
+                this.createMarketplaceCharts();
+                break;
+            case 'categories':
+                this.createCategoryCharts();
+                break;
+            case 'prices':
+                this.createPriceCharts();
+                break;
+            case 'timeline':
+                this.createTimelineCharts();
+                break;
+            case 'comparison':
+                this.createComparisonCharts();
+                break;
+        }
     }
 
     showPage(pageId) {
@@ -190,8 +263,7 @@ class ProductAnalytics {
 
     updateAnalytics() {
         this.updateAnalyticsStats();
-        this.destroyCharts();
-        this.updateCharts();
+        this.updateTabCharts(this.currentTab);
         this.updateTables();
     }
 
@@ -214,11 +286,9 @@ class ProductAnalytics {
         this.charts = {};
     }
 
-    updateCharts() {
-        if (this.products.length === 0) {
-            this.showNotification('Нет данных для анализа. Добавьте товары!', 'info');
-            return;
-        }
+    // ГРАФИКИ ДЛЯ ОБЗОРА
+    createOverviewCharts() {
+        if (this.products.length === 0) return;
 
         this.createMarketplaceChart();
         this.createCategoryChart();
@@ -246,9 +316,8 @@ class ProductAnalytics {
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: 'Распределение по маркетплейсам' }
                 }
             }
         });
@@ -281,18 +350,12 @@ class ProductAnalytics {
                 datasets: [{
                     label: 'Средняя цена (₽)',
                     data: Object.values(data),
-                    backgroundColor: '#4ECDC4',
-                    borderColor: '#45B7D1',
-                    borderWidth: 1
+                    backgroundColor: '#4ECDC4'
                 }]
             },
             options: {
                 responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                scales: { y: { beginAtZero: true } }
             }
         });
     }
@@ -320,14 +383,14 @@ class ProductAnalytics {
     createTopProductsChart() {
         const topProducts = this.products
             .sort((a, b) => b.price - a.price)
-            .slice(0, 5);
+            .slice(0, 8);
         
         const ctx = document.getElementById('topProductsChart').getContext('2d');
         
         this.charts.topProducts = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: topProducts.map(p => this.truncateText(p.name, 20)),
+                labels: topProducts.map(p => this.truncateText(p.name, 15)),
                 datasets: [{
                     label: 'Цена (₽)',
                     data: topProducts.map(p => p.price),
@@ -351,12 +414,445 @@ class ProductAnalytics {
                 labels: Object.keys(data).map(key => this.formatCategoryName(key)),
                 datasets: [{
                     data: Object.values(data),
-                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F']
+                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']
                 }]
             }
         });
     }
 
+    // ГРАФИКИ ДЛЯ МАРКЕТПЛЕЙСОВ
+    createMarketplaceCharts() {
+        if (this.products.length === 0) return;
+
+        this.createMarketplaceShareChart();
+        this.createMarketplaceValueChart();
+        this.createMarketplaceTrendChart();
+        this.createMarketplaceEfficiencyChart();
+    }
+
+    createMarketplaceShareChart() {
+        const data = this.getCountByField('marketplace');
+        const total = Object.values(data).reduce((a, b) => a + b, 0);
+        const percentages = Object.values(data).map(value => (value / total * 100).toFixed(1));
+        
+        const ctx = document.getElementById('marketplaceShareChart').getContext('2d');
+        
+        this.charts.marketplaceShare = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
+                datasets: [{
+                    label: 'Доля (%)',
+                    data: percentages,
+                    backgroundColor: '#6366f1'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+    }
+
+    createMarketplaceValueChart() {
+        const data = this.getTotalValueByMarketplace();
+        const ctx = document.getElementById('marketplaceValueChart').getContext('2d');
+        
+        this.charts.marketplaceValue = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
+                datasets: [{
+                    label: 'Общая стоимость (₽)',
+                    data: Object.values(data),
+                    backgroundColor: '#10b981'
+                }]
+            }
+        });
+    }
+
+    createMarketplaceTrendChart() {
+        const monthlyData = this.getMonthlyDataByMarketplace();
+        const marketplaces = Object.keys(monthlyData);
+        const months = Object.keys(monthlyData[marketplaces[0]] || {});
+        
+        const ctx = document.getElementById('marketplaceTrendChart').getContext('2d');
+        
+        this.charts.marketplaceTrend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: marketplaces.map((mp, index) => ({
+                    label: this.formatMarketplaceName(mp),
+                    data: months.map(month => monthlyData[mp][month] || 0),
+                    borderColor: this.getColor(index),
+                    tension: 0.4,
+                    fill: false
+                }))
+            }
+        });
+    }
+
+    createMarketplaceEfficiencyChart() {
+        const efficiencyData = this.getMarketplaceEfficiency();
+        const ctx = document.getElementById('marketplaceEfficiencyChart').getContext('2d');
+        
+        this.charts.marketplaceEfficiency = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Количество', 'Стоимость', 'Средняя цена', 'Частота'],
+                datasets: [{
+                    label: 'Эффективность маркетплейсов',
+                    data: Object.values(efficiencyData),
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: '#6366f1'
+                }]
+            }
+        });
+    }
+
+    // ГРАФИКИ ДЛЯ КАТЕГОРИЙ
+    createCategoryCharts() {
+        if (this.products.length === 0) return;
+
+        this.createCategoryShareChart();
+        this.createCategorySpendingChart();
+        this.createCategoryTrendChart();
+        this.createCategoryPriceDistributionChart();
+    }
+
+    createCategoryShareChart() {
+        const data = this.getCountByField('category');
+        const ctx = document.getElementById('categoryShareChart').getContext('2d');
+        
+        this.charts.categoryShare = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
+                datasets: [{
+                    data: Object.values(data),
+                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
+                }]
+            }
+        });
+    }
+
+    createCategorySpendingChart() {
+        const data = this.getTotalValueByCategory();
+        const ctx = document.getElementById('categorySpendingChart').getContext('2d');
+        
+        this.charts.categorySpending = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
+                datasets: [{
+                    label: 'Потрачено (₽)',
+                    data: Object.values(data),
+                    backgroundColor: '#f59e0b'
+                }]
+            }
+        });
+    }
+
+    // ГРАФИКИ ДЛЯ ЦЕН
+    createPriceCharts() {
+        if (this.products.length === 0) return;
+
+        this.createPriceDistributionChart();
+        this.createPriceSegmentsChart();
+        this.createPriceTrendChart();
+        this.createPriceComparisonChart();
+    }
+
+    createPriceDistributionChart() {
+        const prices = this.products.map(p => p.price);
+        const ctx = document.getElementById('priceDistributionChart').getContext('2d');
+        
+        this.charts.priceDistribution = new Chart(ctx, {
+            type: 'histogram',
+            data: {
+                datasets: [{
+                    label: 'Распределение цен',
+                    data: prices,
+                    backgroundColor: 'rgba(99, 102, 241, 0.5)'
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Цена (₽)' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Количество' }
+                    }
+                }
+            }
+        });
+    }
+
+    createPriceSegmentsChart() {
+        const segments = {
+            'До 1000₽': this.products.filter(p => p.price < 1000).length,
+            '1000-5000₽': this.products.filter(p => p.price >= 1000 && p.price < 5000).length,
+            '5000-10000₽': this.products.filter(p => p.price >= 5000 && p.price < 10000).length,
+            '10000-50000₽': this.products.filter(p => p.price >= 10000 && p.price < 50000).length,
+            'Свыше 50000₽': this.products.filter(p => p.price >= 50000).length
+        };
+        
+        const ctx = document.getElementById('priceSegmentsChart').getContext('2d');
+        
+        this.charts.priceSegments = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(segments),
+                datasets: [{
+                    data: Object.values(segments),
+                    backgroundColor: ['#4ECDC4', '#45B7D1', '#FF6B6B', '#FFEAA7', '#96CEB4']
+                }]
+            }
+        });
+    }
+
+    // ГРАФИКИ ДЛЯ ВРЕМЕНИ
+    createTimelineCharts() {
+        if (this.products.length === 0) return;
+
+        this.createDailyChart();
+        this.createWeeklyChart();
+        this.createPurchaseTrendChart();
+        this.createSpendingTimelineChart();
+    }
+
+    createDailyChart() {
+        const dailyData = this.getDailyData();
+        const ctx = document.getElementById('dailyChart').getContext('2d');
+        
+        this.charts.daily = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(dailyData).slice(-30), // Последние 30 дней
+                datasets: [{
+                    label: 'Покупки по дням',
+                    data: Object.values(dailyData).slice(-30),
+                    borderColor: '#8b5cf6',
+                    tension: 0.4
+                }]
+            }
+        });
+    }
+
+    // ГРАФИКИ ДЛЯ СРАВНЕНИЯ
+    createComparisonCharts() {
+        if (this.products.length === 0) return;
+
+        this.createMarketplaceComparisonChart();
+        this.createCategoryComparisonChart();
+        this.createRadarChart();
+        this.createBubbleChart();
+    }
+
+    createMarketplaceComparisonChart() {
+        const countData = this.getCountByField('marketplace');
+        const valueData = this.getTotalValueByMarketplace();
+        
+        const ctx = document.getElementById('marketplaceComparisonChart').getContext('2d');
+        
+        this.charts.marketplaceComparison = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(countData).map(key => this.formatMarketplaceName(key)),
+                datasets: [
+                    {
+                        label: 'Количество товаров',
+                        data: Object.values(countData),
+                        backgroundColor: '#4ECDC4',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Общая стоимость (тыс. ₽)',
+                        data: Object.values(valueData).map(v => v / 1000),
+                        backgroundColor: '#FF6B6B',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    }
+
+    createRadarChart() {
+        const marketplaceData = this.getMarketplaceStats();
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        
+        this.charts.radar = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: Object.keys(marketplaceData).map(key => this.formatMarketplaceName(key)),
+                datasets: [{
+                    label: 'Количество товаров',
+                    data: Object.values(marketplaceData).map(stats => stats.count),
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: '#6366f1'
+                }]
+            }
+        });
+    }
+
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ АНАЛИТИКИ
+    getCountByField(field) {
+        return this.products.reduce((acc, product) => {
+            acc[product[field]] = (acc[product[field]] || 0) + 1;
+            return acc;
+        }, {});
+    }
+
+    getAvgPriceByMarketplace() {
+        const groups = this.products.reduce((acc, product) => {
+            if (!acc[product.marketplace]) {
+                acc[product.marketplace] = { total: 0, count: 0 };
+            }
+            acc[product.marketplace].total += product.price;
+            acc[product.marketplace].count += 1;
+            return acc;
+        }, {});
+
+        return Object.entries(groups).reduce((acc, [marketplace, data]) => {
+            acc[marketplace] = data.count > 0 ? data.total / data.count : 0;
+            return acc;
+        }, {});
+    }
+
+    getTotalValueByMarketplace() {
+        return this.products.reduce((acc, product) => {
+            acc[product.marketplace] = (acc[product.marketplace] || 0) + product.price;
+            return acc;
+        }, {});
+    }
+
+    getTotalValueByCategory() {
+        return this.products.reduce((acc, product) => {
+            acc[product.category] = (acc[product.category] || 0) + product.price;
+            return acc;
+        }, {});
+    }
+
+    getMonthlyData() {
+        return this.products.reduce((acc, product) => {
+            const month = new Date(product.date).toLocaleDateString('ru-RU', { 
+                year: 'numeric', 
+                month: 'short' 
+            });
+            acc[month] = (acc[month] || 0) + 1;
+            return acc;
+        }, {});
+    }
+
+    getMonthlyDataByMarketplace() {
+        const result = {};
+        this.products.forEach(product => {
+            const month = new Date(product.date).toLocaleDateString('ru-RU', { 
+                year: 'numeric', 
+                month: 'short' 
+            });
+            if (!result[product.marketplace]) {
+                result[product.marketplace] = {};
+            }
+            result[product.marketplace][month] = (result[product.marketplace][month] || 0) + 1;
+        });
+        return result;
+    }
+
+    getDailyData() {
+        return this.products.reduce((acc, product) => {
+            const date = new Date(product.date).toLocaleDateString('ru-RU');
+            acc[date] = (acc[date] || 0) + 1;
+            return acc;
+        }, {});
+    }
+
+    getMarketplaceStats() {
+        const stats = this.products.reduce((acc, product) => {
+            if (!acc[product.marketplace]) {
+                acc[product.marketplace] = { count: 0, total: 0 };
+            }
+            acc[product.marketplace].count += 1;
+            acc[product.marketplace].total += product.price;
+            return acc;
+        }, {});
+
+        Object.keys(stats).forEach(mp => {
+            stats[mp].average = stats[mp].count > 0 ? stats[mp].total / stats[mp].count : 0;
+        });
+
+        return stats;
+    }
+
+    getMarketplaceEfficiency() {
+        // Упрощенный расчет эффективности
+        const stats = this.getMarketplaceStats();
+        const totalProducts = this.products.length;
+        const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
+        
+        return Object.keys(stats).reduce((acc, mp) => {
+            const mpStats = stats[mp];
+            acc[mp] = (mpStats.count / totalProducts * 100 + mpStats.total / totalValue * 100) / 2;
+            return acc;
+        }, {});
+    }
+
+    getColor(index) {
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+        return colors[index % colors.length];
+    }
+
+    formatMarketplaceName(marketplace) {
+        const names = {
+            'wildberries': 'Wildberries',
+            'ozon': 'Ozon',
+            'yandex': 'Яндекс Маркет',
+            'aliexpress': 'AliExpress',
+            'amazon': 'Amazon',
+            'sbermegamarket': 'СберМегаМаркет'
+        };
+        return names[marketplace] || marketplace;
+    }
+
+    formatCategoryName(category) {
+        const names = {
+            'electronics': 'Электроника',
+            'clothing': 'Одежда',
+            'books': 'Книги',
+            'home': 'Дом и сад',
+            'sports': 'Спорт',
+            'beauty': 'Красота',
+            'toys': 'Игрушки',
+            'food': 'Продукты питания',
+            'auto': 'Автотовары',
+            'health': 'Здоровье'
+        };
+        return names[category] || category;
+    }
+
+    truncateText(text, maxLength) {
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    }
+
+    // Остальные методы (updateTables, export и т.д.) остаются без изменений
     updateTables() {
         this.updateMarketplaceTable();
         this.updateCategoryTable();
@@ -408,65 +904,6 @@ class ProductAnalytics {
         `).join('');
     }
 
-    // Вспомогательные методы для анализа данных
-    getCountByField(field) {
-        return this.products.reduce((acc, product) => {
-            acc[product[field]] = (acc[product[field]] || 0) + 1;
-            return acc;
-        }, {});
-    }
-
-    getAvgPriceByMarketplace() {
-        const groups = this.products.reduce((acc, product) => {
-            if (!acc[product.marketplace]) {
-                acc[product.marketplace] = { total: 0, count: 0 };
-            }
-            acc[product.marketplace].total += product.price;
-            acc[product.marketplace].count += 1;
-            return acc;
-        }, {});
-
-        return Object.entries(groups).reduce((acc, [marketplace, data]) => {
-            acc[marketplace] = data.count > 0 ? data.total / data.count : 0;
-            return acc;
-        }, {});
-    }
-
-    getMonthlyData() {
-        return this.products.reduce((acc, product) => {
-            const month = new Date(product.date).toLocaleDateString('ru-RU', { 
-                year: 'numeric', 
-                month: 'short' 
-            });
-            acc[month] = (acc[month] || 0) + 1;
-            return acc;
-        }, {});
-    }
-
-    getTotalValueByCategory() {
-        return this.products.reduce((acc, product) => {
-            acc[product.category] = (acc[product.category] || 0) + product.price;
-            return acc;
-        }, {});
-    }
-
-    getMarketplaceStats() {
-        const stats = this.products.reduce((acc, product) => {
-            if (!acc[product.marketplace]) {
-                acc[product.marketplace] = { count: 0, total: 0 };
-            }
-            acc[product.marketplace].count += 1;
-            acc[product.marketplace].total += product.price;
-            return acc;
-        }, {});
-
-        Object.keys(stats).forEach(mp => {
-            stats[mp].average = stats[mp].count > 0 ? stats[mp].total / stats[mp].count : 0;
-        });
-
-        return stats;
-    }
-
     getCategoryStats() {
         const stats = this.products.reduce((acc, product) => {
             if (!acc[product.category]) {
@@ -484,39 +921,6 @@ class ProductAnalytics {
         return stats;
     }
 
-    formatMarketplaceName(marketplace) {
-        const names = {
-            'wildberries': 'Wildberries',
-            'ozon': 'Ozon',
-            'yandex': 'Яндекс Маркет',
-            'aliexpress': 'AliExpress',
-            'amazon': 'Amazon',
-            'sbermegamarket': 'СберМегаМаркет'
-        };
-        return names[marketplace] || marketplace;
-    }
-
-    formatCategoryName(category) {
-        const names = {
-            'electronics': 'Электроника',
-            'clothing': 'Одежда',
-            'books': 'Книги',
-            'home': 'Дом и сад',
-            'sports': 'Спорт',
-            'beauty': 'Красота',
-            'toys': 'Игрушки',
-            'food': 'Продукты питания',
-            'auto': 'Автотовары',
-            'health': 'Здоровье'
-        };
-        return names[category] || category;
-    }
-
-    truncateText(text, maxLength) {
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    }
-
-    // Методы экспорта
     exportTable(tableId) {
         const table = document.getElementById(tableId);
         const ws = XLSX.utils.table_to_sheet(table);
