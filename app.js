@@ -34,9 +34,7 @@ class ProductAnalytics {
                     category: 'electronics',
                     name: 'Смартфон Samsung Galaxy S23',
                     price: 74990,
-                    date: new Date('2024-01-15').toISOString(),
-                    purchaseDate: '2024-01-15',
-                    notes: 'Покупка по акции'
+                    date: new Date('2024-01-15').toISOString()
                 },
                 {
                     id: this.generateId(),
@@ -44,9 +42,7 @@ class ProductAnalytics {
                     category: 'books',
                     name: 'Книга "JavaScript для начинающих"',
                     price: 1560,
-                    date: new Date('2024-01-20').toISOString(),
-                    purchaseDate: '2024-01-18',
-                    notes: 'Для изучения программирования'
+                    date: new Date('2024-01-20').toISOString()
                 },
                 {
                     id: this.generateId(),
@@ -54,9 +50,7 @@ class ProductAnalytics {
                     category: 'clothing',
                     name: 'Футболка хлопковая черная',
                     price: 1299,
-                    date: new Date('2024-02-01').toISOString(),
-                    purchaseDate: '2024-01-28',
-                    notes: 'Размер M'
+                    date: new Date('2024-02-01').toISOString()
                 }
             ]
         };
@@ -70,6 +64,8 @@ class ProductAnalytics {
     }
 
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
         // Навигация между страницами аутентификации
         document.getElementById('showRegister').addEventListener('click', (e) => {
             e.preventDefault();
@@ -113,15 +109,17 @@ class ProductAnalytics {
         
         // Экспорт
         document.getElementById('exportAllBtn').addEventListener('click', () => this.exportAllData());
+        
+        // Экспорт отдельных таблиц
         document.querySelectorAll('.export-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.exportTable(e.target.closest('.export-btn').dataset.table));
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tableId = e.target.getAttribute('data-table');
+                this.exportTable(tableId);
+            });
         });
 
-        // Устанавливаем сегодняшнюю дату как значение по умолчанию для даты покупки
-        const purchaseDateInput = document.getElementById('purchaseDate');
-        if (purchaseDateInput) {
-            purchaseDateInput.valueAsDate = new Date();
-        }
+        console.log('Event listeners setup complete');
     }
 
     checkAuth() {
@@ -161,7 +159,7 @@ class ProductAnalytics {
             id: this.generateId(),
             username,
             email,
-            password, // В реальном приложении пароль должен быть хеширован!
+            password,
             createdAt: new Date().toISOString(),
             products: []
         };
@@ -229,7 +227,7 @@ class ProductAnalytics {
         const userIndex = this.users.findIndex(u => u.id === this.currentUser.id);
         if (userIndex !== -1) {
             this.users[userIndex].products = products;
-            this.currentUser.products = products; // Обновляем текущего пользователя
+            this.currentUser.products = products;
             this.saveUsers();
             localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
         }
@@ -260,9 +258,7 @@ class ProductAnalytics {
             category: document.getElementById('category').value,
             name: document.getElementById('productName').value,
             price: parseFloat(document.getElementById('price').value),
-            date: new Date().toISOString(),
-            purchaseDate: document.getElementById('purchaseDate').value || new Date().toISOString().split('T')[0],
-            notes: document.getElementById('notes').value
+            date: new Date().toISOString()
         };
 
         const userProducts = this.getCurrentUserProducts();
@@ -270,8 +266,6 @@ class ProductAnalytics {
         this.saveUserProducts(userProducts);
         
         document.getElementById('productForm').reset();
-        // Сбрасываем дату покупки на сегодня
-        document.getElementById('purchaseDate').valueAsDate = new Date();
         
         this.showPage('mainPage');
         this.updateQuickStats();
@@ -315,7 +309,6 @@ class ProductAnalytics {
                     <div class="product-name">${product.name}</div>
                     <div class="product-details">
                         ${this.formatMarketplaceName(product.marketplace)} • ${this.formatCategoryName(product.category)}
-                        ${product.purchaseDate ? ` • ${new Date(product.purchaseDate).toLocaleDateString('ru-RU')}` : ''}
                     </div>
                 </div>
                 <div class="product-price">${product.price.toFixed(2)}₽</div>
@@ -326,23 +319,9 @@ class ProductAnalytics {
     updateAnalytics() {
         if (!this.currentUser) return;
         
-        this.updateAnalyticsStats();
         this.destroyCharts();
         this.updateCharts();
         this.updateTables();
-    }
-
-    updateAnalyticsStats() {
-        const products = this.getCurrentUserProducts();
-        const totalProducts = products.length;
-        const totalValue = products.reduce((sum, product) => sum + product.price, 0);
-        const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
-        const uniqueMarketplaces = new Set(products.map(p => p.marketplace)).size;
-
-        document.getElementById('analyticsTotalProducts').textContent = totalProducts;
-        document.getElementById('analyticsTotalValue').textContent = `${totalValue.toFixed(2)}₽`;
-        document.getElementById('analyticsAvgPrice').textContent = `${avgPrice.toFixed(2)}₽`;
-        document.getElementById('analyticsMarketplaces').textContent = uniqueMarketplaces;
     }
 
     destroyCharts() {
@@ -363,10 +342,6 @@ class ProductAnalytics {
         this.createCategoryChart();
         this.createAvgPriceChart();
         this.createMonthlyChart();
-        this.createTopProductsChart();
-        this.createCategoryValueChart();
-        this.createTrendChart();
-        this.createComparisonChart();
     }
 
     createMarketplaceChart() {
@@ -380,9 +355,7 @@ class ProductAnalytics {
                 labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
                 datasets: [{
                     data: Object.values(data),
-                    backgroundColor: [
-                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
-                    ],
+                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]
@@ -409,11 +382,7 @@ class ProductAnalytics {
                 labels: Object.keys(data).map(key => this.formatCategoryName(key)),
                 datasets: [{
                     data: Object.values(data),
-                    backgroundColor: [
-                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
-                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
-                        '#A29BFE', '#FD79A8', '#E17055', '#00CEC9'
-                    ]
+                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F']
                 }]
             }
         });
@@ -468,100 +437,6 @@ class ProductAnalytics {
         });
     }
 
-    createTopProductsChart() {
-        const products = this.getCurrentUserProducts();
-        const topProducts = products
-            .sort((a, b) => b.price - a.price)
-            .slice(0, 5);
-        
-        const ctx = document.getElementById('topProductsChart').getContext('2d');
-        
-        this.charts.topProducts = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: topProducts.map(p => this.truncateText(p.name, 20)),
-                datasets: [{
-                    label: 'Цена (₽)',
-                    data: topProducts.map(p => p.price),
-                    backgroundColor: '#45B7D1'
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true
-            }
-        });
-    }
-
-    createCategoryValueChart() {
-        const products = this.getCurrentUserProducts();
-        const data = this.getTotalValueByCategory(products);
-        const ctx = document.getElementById('categoryValueChart').getContext('2d');
-        
-        this.charts.categoryValue = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
-                datasets: [{
-                    data: Object.values(data),
-                    backgroundColor: [
-                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
-                        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
-                        '#A29BFE', '#FD79A8', '#E17055', '#00CEC9'
-                    ]
-                }]
-            }
-        });
-    }
-
-    createTrendChart() {
-        const products = this.getCurrentUserProducts();
-        const trendData = this.getTrendData(products);
-        const ctx = document.getElementById('trendChart').getContext('2d');
-        
-        this.charts.trend = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: trendData.dates,
-                datasets: [{
-                    label: 'Сумма покупок (₽)',
-                    data: trendData.amounts,
-                    borderColor: '#96CEB4',
-                    backgroundColor: 'rgba(150, 206, 180, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            }
-        });
-    }
-
-    createComparisonChart() {
-        const products = this.getCurrentUserProducts();
-        const comparisonData = this.getComparisonData(products);
-        const ctx = document.getElementById('comparisonChart').getContext('2d');
-        
-        this.charts.comparison = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: Object.keys(comparisonData.count).map(key => this.formatMarketplaceName(key)),
-                datasets: [
-                    {
-                        label: 'Количество товаров',
-                        data: Object.values(comparisonData.count),
-                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
-                        borderColor: '#FF6B6B'
-                    },
-                    {
-                        label: 'Общая стоимость (тыс. ₽)',
-                        data: Object.values(comparisonData.value).map(v => v / 1000),
-                        backgroundColor: 'rgba(78, 205, 196, 0.2)',
-                        borderColor: '#4ECDC4'
-                    }
-                ]
-            }
-        });
-    }
-
     updateTables() {
         this.updateMarketplaceTable();
         this.updateCategoryTable();
@@ -611,7 +486,6 @@ class ProductAnalytics {
                 <td>${this.formatCategoryName(product.category)}</td>
                 <td>${product.name}</td>
                 <td>${product.price.toFixed(2)}₽</td>
-                <td>${product.notes || '-'}</td>
             </tr>
         `).join('');
     }
@@ -649,52 +523,6 @@ class ProductAnalytics {
             acc[month] = (acc[month] || 0) + 1;
             return acc;
         }, {});
-    }
-
-    getTotalValueByCategory(products) {
-        return products.reduce((acc, product) => {
-            acc[product.category] = (acc[product.category] || 0) + product.price;
-            return acc;
-        }, {});
-    }
-
-    getTrendData(products) {
-        const dailyData = products.reduce((acc, product) => {
-            const date = new Date(product.date).toLocaleDateString('ru-RU');
-            if (!acc[date]) {
-                acc[date] = 0;
-            }
-            acc[date] += product.price;
-            return acc;
-        }, {});
-
-        const sortedDates = Object.keys(dailyData).sort();
-        return {
-            dates: sortedDates,
-            amounts: sortedDates.map(date => dailyData[date])
-        };
-    }
-
-    getComparisonData(products) {
-        const data = products.reduce((acc, product) => {
-            if (!acc[product.marketplace]) {
-                acc[product.marketplace] = { count: 0, value: 0 };
-            }
-            acc[product.marketplace].count += 1;
-            acc[product.marketplace].value += product.price;
-            return acc;
-        }, {});
-
-        return {
-            count: Object.entries(data).reduce((acc, [mp, d]) => {
-                acc[mp] = d.count;
-                return acc;
-            }, {}),
-            value: Object.entries(data).reduce((acc, [mp, d]) => {
-                acc[mp] = d.value;
-                return acc;
-            }, {})
-        };
     }
 
     getMarketplaceStats(products) {
@@ -737,10 +565,7 @@ class ProductAnalytics {
             'ozon': 'Ozon',
             'yandex': 'Яндекс Маркет',
             'aliexpress': 'AliExpress',
-            'amazon': 'Amazon',
-            'sbermegamarket': 'СберМегаМаркет',
-            'citilink': 'Citilink',
-            'dns': 'DNS'
+            'amazon': 'Amazon'
         };
         return names[marketplace] || marketplace;
     }
@@ -754,16 +579,9 @@ class ProductAnalytics {
             'sports': 'Спорт',
             'beauty': 'Красота',
             'toys': 'Игрушки',
-            'food': 'Продукты питания',
-            'auto': 'Автотовары',
-            'health': 'Здоровье',
-            'other': 'Другое'
+            'food': 'Продукты питания'
         };
         return names[category] || category;
-    }
-
-    truncateText(text, maxLength) {
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     }
 
     // Методы экспорта
@@ -793,12 +611,10 @@ class ProductAnalytics {
         // Экспорт сырых данных
         const rawData = products.map(product => ({
             'Дата добавления': new Date(product.date).toLocaleDateString('ru-RU'),
-            'Дата покупки': product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString('ru-RU') : '-',
             'Маркетплейс': this.formatMarketplaceName(product.marketplace),
             'Категория': this.formatCategoryName(product.category),
             'Товар': product.name,
-            'Цена': product.price,
-            'Примечания': product.notes || ''
+            'Цена': product.price
         }));
         
         const rawWs = XLSX.utils.json_to_sheet(rawData);
@@ -826,11 +642,12 @@ class ProductAnalytics {
                     document.body.removeChild(notification);
                 }
             }, 300);
-        }, 4000);
+        }, 3000);
     }
 }
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing app...');
     new ProductAnalytics();
 });
