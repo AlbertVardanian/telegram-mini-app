@@ -3,318 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Аналитика товаров</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Mini Product Tracker</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Главный экран -->
-        <div id="mainScreen">
-            <div class="header">
-                <h1>📊 Аналитика товаров</h1>
-                <p>Управляйте вашими товарами и аналитикой</p>
-            </div>
-            
-            <div class="card">
-                <button class="btn btn-primary" onclick="showAddProductScreen()">
-                    <i class="fas fa-plus-circle"></i>
-                    Добавить товар
-                </button>
-                <button class="btn btn-secondary" onclick="showAnalyticsScreen()">
-                    <i class="fas fa-chart-bar"></i>
-                    Аналитика
-                </button>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h2>Последние товары</h2>
-                </div>
-                <div id="recentProducts" class="products-list">
-                    <!-- Товары будут загружены здесь -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Экран добавления товара -->
-        <div id="addProductScreen" class="hidden">
-            <button class="back-btn" onclick="showMainScreen()">
-                <i class="fas fa-arrow-left"></i>
-                Назад
-            </button>
-            
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-plus-circle"></i>
-                    <h2>Добавить товар</h2>
-                </div>
-                
-                <div id="successMessage" class="success-message hidden">
-                    <i class="fas fa-check-circle"></i>
-                    <span id="successText">Товар успешно добавлен!</span>
-                </div>
-                
-                <form id="addProductForm">
-                    <div class="form-group">
-                        <label for="productName">
-                            <i class="fas fa-tag"></i>
-                            Название товара
-                        </label>
-                        <input type="text" id="productName" class="form-control" 
-                               placeholder="Например: iPhone 13 Pro Max 256GB" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="productPrice">
-                            <i class="fas fa-ruble-sign"></i>
-                            Цена (₽)
-                        </label>
-                        <input type="number" id="productPrice" class="form-control" 
-                               placeholder="99999" required min="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="productCategory">
-                            <i class="fas fa-folder"></i>
-                            Категория
-                        </label>
-                        <select id="productCategory" class="form-control">
-                            <option value="auto">🎯 Автоматическое определение</option>
-                            <option value="📱 ЭЛЕКТРОНИКА">📱 ЭЛЕКТРОНИКА</option>
-                            <option value="🏠 БЫТОВАЯ ТЕХНИКА">🏠 БЫТОВАЯ ТЕХНИКА</option>
-                            <option value="👕 ОДЕЖДА И ОБУВЬ">👕 ОДЕЖДА И ОБУВЬ</option>
-                            <option value="💄 КРАСОТА И ЗДОРОВЬЕ">💄 КРАСОТА И ЗДОРОВЬЕ</option>
-                            <option value="🎮 ИГРУШКИ И ХОББИ">🎮 ИГРУШКИ И ХОББИ</option>
-                            <option value="🛋 ДОМ И САД">🛋 ДОМ И САД</option>
-                            <option value="👶 ДЕТСКИЕ ТОВАРЫ">👶 ДЕТСКИЕ ТОВАРЫ</option>
-                            <option value="🏃 СПОРТ И ОТДЫХ">🏃 СПОРТ И ОТДЫХ</option>
-                            <option value="🚗 АВТОТОВАРЫ">🚗 АВТОТОВАРЫ</option>
-                            <option value="📚 КНИГИ И КАНЦТОВАРЫ">📚 КНИГИ И КАНЦТОВАРЫ</option>
-                            <option value="🐾 ЗООТОВАРЫ">🐾 ЗООТОВАРЫ</option>
-                            <option value="🍎 ПРОДУКТЫ ПИТАНИЯ">🍎 ПРОДУКТЫ ПИТАНИЯ</option>
-                            <option value="🎁 ДРУГОЕ">🎁 ДРУГОЕ</option>
-                        </select>
-                        <div id="autoDetectionPreview" class="auto-detection-preview hidden">
-                            <i class="fas fa-robot"></i>
-                            Автоопределение: <span id="detectedCategory"></span>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        Сохранить товар
-                    </button>
+    <div id="app">
+        <!-- Страница входа -->
+        <div id="loginPage" class="page active">
+            <div class="login-container">
+                <h2>Вход в систему</h2>
+                <form id="loginForm">
+                    <input type="text" id="username" placeholder="Имя пользователя" required>
+                    <input type="password" id="password" placeholder="Пароль" required>
+                    <button type="submit">Войти</button>
                 </form>
             </div>
         </div>
-        
-        <!-- Экран аналитики -->
-        <div id="analyticsScreen" class="hidden">
-            <button class="back-btn" onclick="showMainScreen()">
-                <i class="fas fa-arrow-left"></i>
-                Назад
-            </button>
+
+        <!-- Главная страница -->
+        <div id="mainPage" class="page">
+            <header>
+                <h1>Учет товаров</h1>
+                <button id="logoutBtn" class="btn-secondary">Выйти</button>
+            </header>
             
-            <div class="header">
-                <h1>📈 Аналитика товаров</h1>
-                <p>Статистика и визуализация ваших данных</p>
+            <div class="main-actions">
+                <button id="addProductBtn" class="btn-primary">ДОБАВИТЬ ТОВАР</button>
+                <button id="analyticsBtn" class="btn-primary">АНАЛИТИКА ТОВАРОВ</button>
             </div>
+        </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('overview')">Обзор</button>
-                <button class="tab" onclick="switchTab('categories')">Категории</button>
-                <button class="tab" onclick="switchTab('prices')">Цены</button>
-                <button class="tab" onclick="switchTab('products')">Все товары</button>
-            </div>
+        <!-- Страница добавления товара -->
+        <div id="addProductPage" class="page">
+            <header>
+                <h2>Добавить товар</h2>
+                <button id="backFromAddBtn" class="btn-secondary">← Назад</button>
+            </header>
             
-            <!-- Вкладка Обзор -->
-            <div id="overviewTab" class="tab-content active">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-pie"></i>
-                        <h2>Общая статистика</h2>
-                    </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalProducts">0</div>
-                            <div class="stat-label">Всего товаров</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalValue">0₽</div>
-                            <div class="stat-label">Общая стоимость</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="avgPrice">0₽</div>
-                            <div class="stat-label">Средняя цена</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="topCategory">-</div>
-                            <div class="stat-label">Популярная категория</div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-header">
-                        <h3 class="section-title">Распределение по категориям</h3>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                    
-                    <div class="section-header">
-                        <h3 class="section-title">Динамика добавления товаров</h3>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="timelineChart"></canvas>
-                    </div>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="marketplace">Маркетплейс:</label>
+                    <select id="marketplace" required>
+                        <option value="">Выберите маркетплейс</option>
+                        <option value="wildberries">Wildberries</option>
+                        <option value="ozon">Ozon</option>
+                        <option value="yandex">Яндекс Маркет</option>
+                        <option value="aliexpress">AliExpress</option>
+                        <option value="amazon">Amazon</option>
+                    </select>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-table"></i>
-                        <h2>Топ товаров по цене</h2>
-                    </div>
-                    <div class="table-container">
-                        <table class="table" id="topProductsTable">
-                            <thead>
-                                <tr>
-                                    <th>Товар</th>
-                                    <th>Цена</th>
-                                    <th>Категория</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут загружены здесь -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="form-group">
+                    <label for="category">Категория:</label>
+                    <select id="category" required>
+                        <option value="">Выберите категорию</option>
+                        <option value="electronics">Электроника</option>
+                        <option value="clothing">Одежда</option>
+                        <option value="books">Книги</option>
+                        <option value="home">Дом и сад</option>
+                        <option value="sports">Спорт</option>
+                        <option value="beauty">Красота</option>
+                        <option value="toys">Игрушки</option>
+                        <option value="food">Продукты питания</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productName">Название товара:</label>
+                    <input type="text" id="productName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Цена (₽):</label>
+                    <input type="number" id="price" step="0.01" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Сохранить товар</button>
+            </form>
+        </div>
+
+        <!-- Страница аналитики -->
+        <div id="analyticsPage" class="page">
+            <header>
+                <h2>Аналитика товаров</h2>
+                <button id="backFromAnalyticsBtn" class="btn-secondary">← Назад</button>
+            </header>
+
+            <div class="analytics-controls">
+                <button id="exportAllBtn" class="btn-primary">Экспорт всех данных в Excel</button>
+            </div>
+
+            <!-- Графики -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Распределение по маркетплейсам</h3>
+                    <canvas id="marketplaceChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Распределение по категориям</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Средняя цена по маркетплейсам</h3>
+                    <canvas id="avgPriceChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Количество товаров по месяцам</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Топ товаров по цене</h3>
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Стоимость по категориям</h3>
+                    <canvas id="categoryValueChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Динамика покупок</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Сравнение маркетплейсов</h3>
+                    <canvas id="comparisonChart"></canvas>
                 </div>
             </div>
 
-            <!-- Вкладка Категории -->
-            <div id="categoriesTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-bar"></i>
-                        <h2>Статистика по категориям</h2>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
-                    
-                    <div class="chart-small">
-                        <canvas id="priceByCategoryChart"></canvas>
-                    </div>
+            <!-- Таблицы -->
+            <div class="tables-section">
+                <div class="table-container">
+                    <h3>Сводная таблица по маркетплейсам</h3>
+                    <table id="marketplaceTable">
+                        <thead>
+                            <tr>
+                                <th>Маркетплейс</th>
+                                <th>Кол-во товаров</th>
+                                <th>Общая стоимость</th>
+                                <th>Средняя цена</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button class="export-btn" data-table="marketplaceTable">Экспорт в Excel</button>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>
-                        <h2>Детали по категориям</h2>
-                    </div>
-                    <div class="table-container">
-                        <table class="table" id="categoriesTable">
-                            <thead>
-                                <tr>
-                                    <th>Категория</th>
-                                    <th>Товары</th>
-                                    <th>Стоимость</th>
-                                    <th>Средняя цена</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут загружены здесь -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Вкладка Цены -->
-            <div id="pricesTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-line"></i>
-                        <h2>Анализ цен</h2>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <canvas id="priceDistributionChart"></canvas>
-                    </div>
-                    
-                    <div class="chart-small">
-                        <canvas id="monthlyTrendChart"></canvas>
-                    </div>
+                <div class="table-container">
+                    <h3>Сводная таблица по категориям</h3>
+                    <table id="categoryTable">
+                        <thead>
+                            <tr>
+                                <th>Категория</th>
+                                <th>Кол-во товаров</th>
+                                <th>Общая стоимость</th>
+                                <th>Средняя цена</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button class="export-btn" data-table="categoryTable">Экспорт в Excel</button>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-percentage"></i>
-                        <h2>Распределение цен</h2>
-                    </div>
-                    <div class="table-container">
-                        <table class="table" id="priceRangesTable">
-                            <thead>
-                                <tr>
-                                    <th>Диапазон цен</th>
-                                    <th>Кол-во товаров</th>
-                                    <th>% от общей стоимости</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут загружены здесь -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Вкладка Все товары -->
-            <div id="productsTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-boxes"></i>
-                        <h2>Все товары</h2>
-                    </div>
-                    <div class="table-container" style="max-height: 500px;">
-                        <table class="table" id="allProductsTable">
-                            <thead>
-                                <tr>
-                                    <th>Название</th>
-                                    <th>Цена</th>
-                                    <th>Категория</th>
-                                    <th>Дата</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут загружены здесь -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-secondary" onclick="exportToCSV()" style="flex: 1;">
-                        <i class="fas fa-file-export"></i>
-                        Экспорт в CSV
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearAllData()" style="flex: 1; background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger);">
-                        <i class="fas fa-trash"></i>
-                        Очистить данные
-                    </button>
+                <div class="table-container">
+                    <h3>Детализация товаров</h3>
+                    <table id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Маркетплейс</th>
+                                <th>Категория</th>
+                                <th>Товар</th>
+                                <th>Цена</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button class="export-btn" data-table="productsTable">Экспорт в Excel</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
