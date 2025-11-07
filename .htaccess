@@ -9,10 +9,9 @@ RewriteRule . /index.html [L]
 Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options DENY
 Header always set X-XSS-Protection "1; mode=block"
-Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
 # Кэширование статических файлов
-<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg)$">
     Header set Cache-Control "max-age=2592000, public"
 </FilesMatch>
 
@@ -35,9 +34,3 @@ Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains
     Order allow,deny
     Deny from all
 </FilesMatch>
-
-# Запрет доступа к логическим файлам
-<Files "*.log">
-    Order allow,deny
-    Deny from all
-</Files>
