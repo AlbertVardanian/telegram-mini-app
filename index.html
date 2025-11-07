@@ -3,28 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Analytics</title>
+    <title>Product Analytics Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div id="app">
+        <!-- Страница входа -->
+        <div id="loginPage" class="page active">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1>📊 Product Analytics Pro</h1>
+                    <p class="auth-subtitle">Расширенная аналитика товаров</p>
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <input type="text" id="loginUsername" placeholder="Имя пользователя" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" placeholder="Пароль" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">🚀 Войти</button>
+                    </form>
+                    <div class="auth-switch">
+                        <p>Нет аккаунта? <a href="#" id="showRegister">Создать аккаунт</a></p>
+                    </div>
+                    <div class="auth-demo">
+                        <p><strong>Демо-аккаунт:</strong> demo / demo123</p>
+                        <button type="button" id="demoLogin" class="btn btn-secondary btn-full">
+                            🎮 Быстрый демо-вход
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница регистрации -->
+        <div id="registerPage" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1>👤 Регистрация</h1>
+                    <p class="auth-subtitle">Создайте новый аккаунт</p>
+                    <form id="registerForm" class="auth-form">
+                        <div class="form-group">
+                            <input type="text" id="regUsername" placeholder="Имя пользователя" required minlength="3">
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="regEmail" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="regPassword" placeholder="Пароль" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="regConfirmPassword" placeholder="Подтвердите пароль" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">✨ Зарегистрироваться</button>
+                    </form>
+                    <div class="auth-switch">
+                        <p>Уже есть аккаунт? <a href="#" id="showLogin">Войти</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Главная страница -->
-        <div id="mainPage" class="page active">
+        <div id="mainPage" class="page">
             <nav class="navbar">
                 <div class="nav-brand">
-                    <h2>📊 Product Analytics</h2>
+                    <h2>📊 Product Analytics Pro</h2>
                 </div>
                 <div class="nav-actions">
-                    <span id="userWelcome">Учет товаров</span>
+                    <span id="userWelcome">Добро пожаловать!</span>
+                    <button id="logoutBtn" class="btn btn-secondary">🚪 Выйти</button>
                 </div>
             </nav>
 
             <main class="main-content">
                 <div class="hero-section">
                     <h1>Управление товарами</h1>
-                    <p>Добавляйте товары и анализируйте статистику покупок</p>
+                    <p>Добавляйте, анализируйте и управляйте вашими покупками</p>
                 </div>
 
                 <div class="action-grid">
@@ -37,7 +95,13 @@
                     <button id="analyticsBtn" class="action-card">
                         <div class="action-icon">📊</div>
                         <h3>Аналитика товаров</h3>
-                        <p>Подробная статистика и графики</p>
+                        <p>Расширенная статистика и графики</p>
+                    </button>
+
+                    <button id="manageProductsBtn" class="action-card">
+                        <div class="action-icon">🗂️</div>
+                        <h3>Управление товарами</h3>
+                        <p>Просмотр и редактирование всех товаров</p>
                     </button>
                 </div>
 
@@ -62,7 +126,7 @@
 
                 <!-- Последние товары -->
                 <div class="recent-products">
-                    <h3>Последние добавленные товары</h3>
+                    <h3>🔥 Последние добавленные товары</h3>
                     <div id="recentProductsList" class="products-list">
                         <p class="no-products">Нет добавленных товаров</p>
                     </div>
@@ -75,7 +139,7 @@
             <nav class="navbar">
                 <button id="backFromAddBtn" class="btn btn-back">← Назад</button>
                 <div class="nav-brand">
-                    <h2>Добавить товар</h2>
+                    <h2>➕ Добавить товар</h2>
                 </div>
                 <div class="nav-actions"></div>
             </nav>
@@ -84,10 +148,10 @@
                 <div class="form-container">
                     <form id="productForm">
                         <div class="form-section">
-                            <h3>Информация о товаре</h3>
+                            <h3>📋 Основная информация</h3>
                             
                             <div class="form-group">
-                                <label for="marketplace">Маркетплейс *</label>
+                                <label for="marketplace">🏪 Маркетплейс *</label>
                                 <select id="marketplace" required>
                                     <option value="">Выберите маркетплейс</option>
                                     <option value="wildberries">Wildberries</option>
@@ -96,44 +160,66 @@
                                     <option value="aliexpress">AliExpress</option>
                                     <option value="amazon">Amazon</option>
                                     <option value="sbermegamarket">СберМегаМаркет</option>
+                                    <option value="citilink">Citilink</option>
+                                    <option value="dns">DNS</option>
+                                    <option value="mvideo">М.Видео</option>
+                                    <option value="eldorado">Эльдорадо</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label for="category">Категория *</label>
+                                <label for="category">📂 Категория *</label>
                                 <select id="category" required>
                                     <option value="">Выберите категорию</option>
-                                    <option value="electronics">Электроника</option>
-                                    <option value="clothing">Одежда</option>
-                                    <option value="books">Книги</option>
-                                    <option value="home">Дом и сад</option>
-                                    <option value="sports">Спорт</option>
-                                    <option value="beauty">Красота</option>
-                                    <option value="toys">Игрушки</option>
-                                    <option value="food">Продукты питания</option>
-                                    <option value="auto">Автотовары</option>
-                                    <option value="health">Здоровье</option>
+                                    <option value="electronics">📱 Электроника</option>
+                                    <option value="clothing">👕 Одежда</option>
+                                    <option value="books">📚 Книги</option>
+                                    <option value="home">🏠 Дом и сад</option>
+                                    <option value="sports">⚽ Спорт</option>
+                                    <option value="beauty">💄 Красота</option>
+                                    <option value="toys">🧸 Игрушки</option>
+                                    <option value="food">🍎 Продукты питания</option>
+                                    <option value="auto">🚗 Автотовары</option>
+                                    <option value="health">💊 Здоровье</option>
+                                    <option value="jewelry">💍 Украшения</option>
+                                    <option value="furniture">🛋️ Мебель</option>
+                                    <option value="tools">🛠️ Инструменты</option>
+                                    <option value="pet">🐶 Товары для животных</option>
+                                    <option value="office">📎 Канцелярия</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label for="productName">Название товара *</label>
+                                <label for="productName">🏷️ Название товара *</label>
                                 <input type="text" id="productName" required placeholder="Введите название товара">
                             </div>
 
                             <div class="form-group">
-                                <label for="price">Цена (₽) *</label>
+                                <label for="price">💰 Цена (₽) *</label>
                                 <input type="number" id="price" step="0.01" min="0" required placeholder="0.00">
                             </div>
 
-                            <div class="form-group">
-                                <label for="purchaseDate">Дата покупки</label>
-                                <input type="date" id="purchaseDate">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="purchaseDate">📅 Дата покупки</label>
+                                    <input type="date" id="purchaseDate">
+                                </div>
+                                <div class="form-group">
+                                    <label for="rating">⭐ Рейтинг (1-5)</label>
+                                    <select id="rating">
+                                        <option value="">Не указан</option>
+                                        <option value="1">1 - Ужасно</option>
+                                        <option value="2">2 - Плохо</option>
+                                        <option value="3">3 - Нормально</option>
+                                        <option value="4">4 - Хорошо</option>
+                                        <option value="5">5 - Отлично</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="notes">Примечания</label>
-                                <textarea id="notes" placeholder="Дополнительная информация о товаре" rows="3"></textarea>
+                                <label for="notes">📝 Примечания</label>
+                                <textarea id="notes" placeholder="Дополнительная информация о товаре, отзыв, особенности..." rows="4"></textarea>
                             </div>
                         </div>
 
@@ -145,15 +231,51 @@
             </main>
         </div>
 
+        <!-- Страница управления товарами -->
+        <div id="manageProductsPage" class="page">
+            <nav class="navbar">
+                <button id="backFromManageBtn" class="btn btn-back">← Назад</button>
+                <div class="nav-brand">
+                    <h2>🗂️ Управление товарами</h2>
+                </div>
+                <div class="nav-actions">
+                    <button id="exportProductsBtn" class="btn btn-primary">📥 Экспорт товаров</button>
+                </div>
+            </nav>
+
+            <main class="main-content">
+                <div class="manage-header">
+                    <h3>Все товары</h3>
+                    <div class="manage-controls">
+                        <input type="text" id="searchProducts" placeholder="🔍 Поиск товаров..." class="search-input">
+                        <select id="sortProducts" class="sort-select">
+                            <option value="date-desc">📅 Сначала новые</option>
+                            <option value="date-asc">📅 Сначала старые</option>
+                            <option value="price-desc">💰 Сначала дорогие</option>
+                            <option value="price-asc">💰 Сначала дешевые</option>
+                            <option value="name-asc">🔤 А-Я</option>
+                            <option value="name-desc">🔤 Я-А</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="products-management">
+                    <div id="productsManagementList" class="products-management-list">
+                        <!-- Товары будут загружены здесь -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
         <!-- Страница аналитики -->
         <div id="analyticsPage" class="page">
             <nav class="navbar">
                 <button id="backFromAnalyticsBtn" class="btn btn-back">← Назад</button>
                 <div class="nav-brand">
-                    <h2>Аналитика товаров</h2>
+                    <h2>📊 Аналитика товаров</h2>
                 </div>
                 <div class="nav-actions">
-                    <button id="exportAllBtn" class="btn btn-primary">📥 Экспорт в Excel</button>
+                    <button id="exportAllBtn" class="btn btn-primary">📥 Полный экспорт</button>
                 </div>
             </nav>
 
@@ -195,219 +317,448 @@
 
                 <!-- Визуальная аналитика с табами -->
                 <section class="analytics-section">
-                    <h3>📊 Визуальная аналитика</h3>
+                    <h3>🎛️ Панель аналитики</h3>
                     
-                    <!-- Табы для переключения аналитики -->
+                    <!-- Мега-табы -->
                     <div class="analytics-tabs">
-                        <button class="tab-btn active" data-tab="overview">📈 Обзор</button>
+                        <button class="tab-btn active" data-tab="overview">📊 Обзор</button>
                         <button class="tab-btn" data-tab="marketplaces">🏪 Маркетплейсы</button>
                         <button class="tab-btn" data-tab="categories">📂 Категории</button>
                         <button class="tab-btn" data-tab="prices">💰 Цены</button>
                         <button class="tab-btn" data-tab="timeline">📅 Время</button>
                         <button class="tab-btn" data-tab="comparison">⚖️ Сравнение</button>
+                        <button class="tab-btn" data-tab="advanced">🚀 Продвинутая</button>
+                        <button class="tab-btn" data-tab="predictive">🔮 Прогнозы</button>
                     </div>
 
-                    <!-- Контент табов -->
+                    <!-- ОБЗОР - 12 графиков -->
                     <div class="tab-content active" id="overviewTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>🛒 Распределение по маркетплейсам</h4>
                                 <canvas id="marketplaceChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📂 Распределение по категориям</h4>
                                 <canvas id="categoryChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💵 Средняя цена по маркетплейсам</h4>
                                 <canvas id="avgPriceChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📅 Покупки по месяцам</h4>
                                 <canvas id="monthlyChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🏆 Топ товаров по цене</h4>
                                 <canvas id="topProductsChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💎 Стоимость по категориям</h4>
                                 <canvas id="categoryValueChart"></canvas>
                             </div>
+                            <div class="chart-card">
+                                <h4>📈 Тренд расходов</h4>
+                                <canvas id="spendingTrendChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎯 Ценовые сегменты</h4>
+                                <canvas id="priceSegmentsOverviewChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>⚡ Активность покупок</h4>
+                                <canvas id="purchaseActivityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Соотношение цена/категория</h4>
+                                <canvas id="priceCategoryChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔄 Динамика маркетплейсов</h4>
+                                <canvas id="marketplaceDynamicsChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Воронка покупок</h4>
+                                <canvas id="purchaseFunnelChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- МАРКЕТПЛЕЙСЫ - 12 графиков -->
                     <div class="tab-content" id="marketplacesTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>📊 Доля маркетплейсов</h4>
                                 <canvas id="marketplaceShareChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💰 Стоимость по маркетплейсам</h4>
                                 <canvas id="marketplaceValueChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📈 Динамика по маркетплейсам</h4>
                                 <canvas id="marketplaceTrendChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>⚡ Эффективность маркетплейсов</h4>
                                 <canvas id="marketplaceEfficiencyChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🎯 Средний чек по маркетплейсам</h4>
                                 <canvas id="marketplaceAvgChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📦 Товары по маркетплейсам</h4>
                                 <canvas id="marketplaceProductsChart"></canvas>
                             </div>
+                            <div class="chart-card">
+                                <h4>📅 Месячная активность по MP</h4>
+                                <canvas id="marketplaceMonthlyChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Плотность покупок по MP</h4>
+                                <canvas id="marketplaceDensityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Воронка маркетплейсов</h4>
+                                <canvas id="marketplaceFunnelChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Growth маркетплейсов</h4>
+                                <canvas id="marketplaceGrowthChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>⚖️ Сравнение MP по категориям</h4>
+                                <canvas id="marketplaceCategoryChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Детализация MP</h4>
+                                <canvas id="marketplaceDetailsChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- КАТЕГОРИИ - 12 графиков -->
                     <div class="tab-content" id="categoriesTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>📊 Доля категорий</h4>
                                 <canvas id="categoryShareChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💰 Стоимость по категориям</h4>
                                 <canvas id="categorySpendingChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📈 Динамика по категориям</h4>
                                 <canvas id="categoryTrendChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🎯 Распределение цен по категориям</h4>
                                 <canvas id="categoryPriceDistributionChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📊 Популярность категорий</h4>
                                 <canvas id="categoryPopularityChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💎 Инвестиции в категории</h4>
                                 <canvas id="categoryInvestmentChart"></canvas>
                             </div>
+                            <div class="chart-card">
+                                <h4>📅 Сезонность категорий</h4>
+                                <canvas id="categorySeasonalityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Growth категорий</h4>
+                                <canvas id="categoryGrowthChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Воронка категорий</h4>
+                                <canvas id="categoryFunnelChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Плотность категорий</h4>
+                                <canvas id="categoryDensityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>⚖️ Сравнение категорий по MP</h4>
+                                <canvas id="categoryMarketplaceChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Детализация категорий</h4>
+                                <canvas id="categoryDetailsChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- ЦЕНЫ - 12 графиков -->
                     <div class="tab-content" id="pricesTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>📊 Распределение цен</h4>
                                 <canvas id="priceDistributionChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💰 Ценовые сегменты</h4>
                                 <canvas id="priceSegmentsChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📈 Динамика средней цены</h4>
                                 <canvas id="priceTrendChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>⚖️ Сравнение цен</h4>
                                 <canvas id="priceComparisonChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🎯 Ценовые корзины</h4>
                                 <canvas id="priceBasketChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📊 Статистика цен</h4>
                                 <canvas id="priceStatsChart"></canvas>
                             </div>
+                            <div class="chart-card">
+                                <h4>📈 Волатильность цен</h4>
+                                <canvas id="priceVolatilityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Плотность цен</h4>
+                                <canvas id="priceDensityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Ценовые кластеры</h4>
+                                <canvas id="priceClustersChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Ценовые тренды по категориям</h4>
+                                <canvas id="priceCategoryTrendsChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Квантили цен</h4>
+                                <canvas id="priceQuantilesChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Анализ выбросов цен</h4>
+                                <canvas id="priceOutliersChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- ВРЕМЯ - 12 графиков -->
                     <div class="tab-content" id="timelineTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>📅 Покупки по дням</h4>
                                 <canvas id="dailyChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📊 Покупки по неделям</h4>
                                 <canvas id="weeklyChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📈 Тренд покупок</h4>
                                 <canvas id="purchaseTrendChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>💰 Стоимость по времени</h4>
                                 <canvas id="spendingTimelineChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📆 Месячная активность</h4>
                                 <canvas id="monthlyActivityChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🎯 Сезонность покупок</h4>
                                 <canvas id="seasonalityChart"></canvas>
                             </div>
+                            <div class="chart-card">
+                                <h4>📈 Кумулятивные расходы</h4>
+                                <canvas id="cumulativeSpendingChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Активность по дням недели</h4>
+                                <canvas id="weekdayActivityChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Временные кластеры</h4>
+                                <canvas id="timeClustersChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Moving Average</h4>
+                                <canvas id="movingAverageChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Годовая динамика</h4>
+                                <canvas id="yearlyDynamicsChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Детальный временной анализ</h4>
+                                <canvas id="timeAnalysisChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- СРАВНЕНИЕ - 12 графиков -->
                     <div class="tab-content" id="comparisonTab">
                         <div class="charts-grid">
                             <div class="chart-card">
                                 <h4>⚖️ Сравнение маркетплейсов</h4>
                                 <canvas id="marketplaceComparisonChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📊 Сравнение категорий</h4>
                                 <canvas id="categoryComparisonChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📈 Радарная диаграмма</h4>
                                 <canvas id="radarChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>🎯 Пузырьковая диаграмма</h4>
                                 <canvas id="bubbleChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>📊 Корреляция цена-категория</h4>
                                 <canvas id="correlationChart"></canvas>
                             </div>
-                            
                             <div class="chart-card">
                                 <h4>⚡ Производительность</h4>
                                 <canvas id="performanceChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Matrix сравнений</h4>
+                                <canvas id="comparisonMatrixChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Parallel Coordinates</h4>
+                                <canvas id="parallelCoordinatesChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Sankey Diagram</h4>
+                                <canvas id="sankeyChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Heatmap сравнений</h4>
+                                <canvas id="comparisonHeatmapChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>⚖️ Бенчмаркинг</h4>
+                                <canvas id="benchmarkingChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Детальное сравнение</h4>
+                                <canvas id="detailedComparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ПРОДВИНУТАЯ - 12 графиков -->
+                    <div class="tab-content" id="advancedTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>📈 PCA Анализ</h4>
+                                <canvas id="pcaAnalysisChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Кластеризация</h4>
+                                <canvas id="clusteringChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎯 Аномалии</h4>
+                                <canvas id="anomalyDetectionChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Временные ряды</h4>
+                                <canvas id="timeSeriesChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Network Graph</h4>
+                                <canvas id="networkGraphChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 3D Scatter Plot</h4>
+                                <canvas id="scatter3dChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Гео-аналитика</h4>
+                                <canvas id="geoAnalysisChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Sentiment Analysis</h4>
+                                <canvas id="sentimentChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎯 Pattern Recognition</h4>
+                                <canvas id="patternChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Behavioral Analysis</h4>
+                                <canvas id="behavioralChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Risk Analysis</h4>
+                                <canvas id="riskAnalysisChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Deep Insights</h4>
+                                <canvas id="deepInsightsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ПРОГНОЗЫ - 12 графиков -->
+                    <div class="tab-content" id="predictiveTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>🔮 Прогноз расходов</h4>
+                                <canvas id="spendingForecastChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Тренд-прогноз</h4>
+                                <canvas id="trendForecastChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎯 ML Predictions</h4>
+                                <canvas id="mlPredictionsChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Monte Carlo</h4>
+                                <canvas id="monteCarloChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 ARIMA Прогноз</h4>
+                                <canvas id="arimaChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎪 Neural Network</h4>
+                                <canvas id="neuralNetworkChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 Prophet Forecast</h4>
+                                <canvas id="prophetChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Bayesian Prediction</h4>
+                                <canvas id="bayesianChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🎯 Ensemble Forecast</h4>
+                                <canvas id="ensembleChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📈 What-If Анализ</h4>
+                                <canvas id="whatIfChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>📊 Confidence Intervals</h4>
+                                <canvas id="confidenceChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>🔍 Predictive Insights</h4>
+                                <canvas id="predictiveInsightsChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -432,6 +783,7 @@
                                             <th>Кол-во</th>
                                             <th>Общая сумма</th>
                                             <th>Средняя цена</th>
+                                            <th>Доля %</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -454,6 +806,7 @@
                                             <th>Кол-во</th>
                                             <th>Общая сумма</th>
                                             <th>Средняя цена</th>
+                                            <th>Доля %</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -464,9 +817,14 @@
                         <div class="table-card full-width">
                             <div class="table-header">
                                 <h4>📦 Все товары</h4>
-                                <button class="btn btn-export export-btn" data-table="productsTable">
-                                    📊 Excel
-                                </button>
+                                <div>
+                                    <button class="btn btn-export export-btn" data-table="productsTable">
+                                        📊 Excel
+                                    </button>
+                                    <button class="btn btn-secondary" id="refreshProducts">
+                                        🔄 Обновить
+                                    </button>
+                                </div>
                             </div>
                             <div class="table-container">
                                 <table id="productsTable">
@@ -477,7 +835,8 @@
                                             <th>Категория</th>
                                             <th>Товар</th>
                                             <th>Цена</th>
-                                            <th>Примечания</th>
+                                            <th>Рейтинг</th>
+                                            <th>Действия</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -487,6 +846,18 @@
                     </div>
                 </section>
             </main>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>🗑️ Удаление товара</h3>
+            <p>Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.</p>
+            <div class="modal-actions">
+                <button id="confirmDelete" class="btn btn-danger">✅ Да, удалить</button>
+                <button id="cancelDelete" class="btn btn-secondary">❌ Отмена</button>
+            </div>
         </div>
     </div>
 
