@@ -1,133 +1,220 @@
 class ProductAnalytics {
     constructor() {
-        this.products = JSON.parse(localStorage.getItem('products')) || [];
+        this.users = JSON.parse(localStorage.getItem('users')) || [];
+        this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         this.charts = {};
-        this.currentTab = 'overview';
+        this.productsToDelete = null;
         this.init();
     }
 
     init() {
+        this.createDemoAccount();
         this.setupEventListeners();
-        this.updateStats();
-        this.updateRecentProducts();
-        
-        // Устанавливаем сегодняшнюю дату по умолчанию
-        const dateInput = document.getElementById('purchaseDate');
-        if (dateInput) {
-            dateInput.valueAsDate = new Date();
-        }
-        
-        // Добавляем демо-данные если пусто
-        if (this.products.length === 0) {
-            this.addDemoData();
-        }
+        this.checkAuth();
     }
 
-    addDemoData() {
-        const demoProducts = [
-            {
+    createDemoAccount() {
+        if (this.users.length === 0) {
+            const demoUser = {
                 id: this.generateId(),
-                marketplace: 'wildberries',
-                category: 'electronics',
-                name: 'Смартфон Samsung Galaxy S23',
-                price: 74990,
-                date: new Date('2024-01-15').toISOString(),
-                purchaseDate: '2024-01-15',
-                notes: 'Покупка по акции'
-            },
-            {
-                id: this.generateId(),
-                marketplace: 'ozon',
-                category: 'books',
-                name: 'Книга "JavaScript для начинающих"',
-                price: 1560,
-                date: new Date('2024-01-20').toISOString(),
-                purchaseDate: '2024-01-18',
-                notes: 'Для изучения программирования'
-            },
-            {
-                id: this.generateId(),
-                marketplace: 'yandex',
-                category: 'clothing',
-                name: 'Футболка хлопковая черная',
-                price: 1299,
-                date: new Date('2024-02-01').toISOString(),
-                purchaseDate: '2024-01-28',
-                notes: 'Размер M'
-            },
-            {
-                id: this.generateId(),
-                marketplace: 'aliexpress',
-                category: 'electronics',
-                name: 'Наушники беспроводные',
-                price: 3499,
-                date: new Date('2024-02-10').toISOString(),
-                purchaseDate: '2024-02-08',
-                notes: 'Доставка 2 недели'
-            },
-            {
-                id: this.generateId(),
-                marketplace: 'wildberries',
-                category: 'home',
-                name: 'Набор кухонных ножей',
-                price: 4590,
-                date: new Date('2024-02-15').toISOString(),
-                purchaseDate: '2024-02-12',
-                notes: 'Отличное качество'
-            }
-        ];
-        
-        this.products = demoProducts;
-        this.saveProducts();
-        this.updateStats();
-        this.updateRecentProducts();
+                username: 'demo',
+                email: 'demo@example.com',
+                password: 'demo123',
+                createdAt: new Date().toISOString(),
+                products: [
+                    {
+                        id: this.generateId(),
+                        marketplace: 'wildberries',
+                        category: 'electronics',
+                        name: 'Смартфон Samsung Galaxy S23',
+                        price: 74990,
+                        date: new Date('2024-01-15').toISOString(),
+                        purchaseDate: '2024-01-15',
+                        notes: 'Покупка по акции',
+                        rating: 5
+                    },
+                    {
+                        id: this.generateId(),
+                        marketplace: 'ozon',
+                        category: 'books',
+                        name: 'Книга "JavaScript для начинающих"',
+                        price: 1560,
+                        date: new Date('2024-01-20').toISOString(),
+                        purchaseDate: '2024-01-18',
+                        notes: 'Для изучения программирования',
+                        rating: 4
+                    },
+                    {
+                        id: this.generateId(),
+                        marketplace: 'yandex',
+                        category: 'clothing',
+                        name: 'Футболка хлопковая черная',
+                        price: 1299,
+                        date: new Date('2024-02-01').toISOString(),
+                        purchaseDate: '2024-01-28',
+                        notes: 'Размер M',
+                        rating: 4
+                    },
+                    {
+                        id: this.generateId(),
+                        marketplace: 'aliexpress',
+                        category: 'electronics',
+                        name: 'Наушники беспроводные',
+                        price: 3499,
+                        date: new Date('2024-02-10').toISOString(),
+                        purchaseDate: '2024-02-08',
+                        notes: 'Доставка 2 недели',
+                        rating: 3
+                    },
+                    {
+                        id: this.generateId(),
+                        marketplace: 'wildberries',
+                        category: 'home',
+                        name: 'Набор кухонных ножей',
+                        price: 4590,
+                        date: new Date('2024-02-15').toISOString(),
+                        purchaseDate: '2024-02-12',
+                        notes: 'Отличное качество',
+                        rating: 5
+                    }
+                ]
+            };
+            
+            this.users.push(demoUser);
+            this.saveUsers();
+        }
     }
 
     setupEventListeners() {
-        console.log('Setting up event listeners...');
+        console.log('🔄 Setting up event listeners...');
+
+        // Навигация аутентификации
+        this.setupAuthListeners();
         
+        // Основная навигация
+        this.setupMainListeners();
+        
+        // Управление товарами
+        this.setupManagementListeners();
+        
+        // Аналитика
+        this.setupAnalyticsListeners();
+        
+        // Модальные окна
+        this.setupModalListeners();
+
+        console.log('✅ Event listeners setup complete');
+    }
+
+    setupAuthListeners() {
+        // Переключение между логином и регистрацией
+        document.getElementById('showRegister')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showPage('registerPage');
+        });
+        
+        document.getElementById('showLogin')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showPage('loginPage');
+        });
+
+        // Формы аутентификации
+        document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleLogin();
+        });
+        
+        document.getElementById('registerForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleRegister();
+        });
+
+        // Демо-вход
+        document.getElementById('demoLogin')?.addEventListener('click', () => {
+            this.demoLogin();
+        });
+
+        // Выход
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            this.logout();
+        });
+    }
+
+    setupMainListeners() {
         // Основные кнопки навигации
-        document.getElementById('addProductBtn').addEventListener('click', () => {
+        document.getElementById('addProductBtn')?.addEventListener('click', () => {
             this.showPage('addProductPage');
         });
         
-        document.getElementById('analyticsBtn').addEventListener('click', () => {
+        document.getElementById('analyticsBtn')?.addEventListener('click', () => {
             this.showPage('analyticsPage');
-            this.updateAnalytics();
+            setTimeout(() => this.updateAnalytics(), 100);
         });
         
+        document.getElementById('manageProductsBtn')?.addEventListener('click', () => {
+            this.showPage('manageProductsPage');
+            this.loadProductsManagement();
+        });
+
         // Кнопки назад
-        document.getElementById('backFromAddBtn').addEventListener('click', () => {
+        document.getElementById('backFromAddBtn')?.addEventListener('click', () => {
             this.showPage('mainPage');
             this.updateStats();
             this.updateRecentProducts();
         });
         
-        document.getElementById('backFromAnalyticsBtn').addEventListener('click', () => {
+        document.getElementById('backFromAnalyticsBtn')?.addEventListener('click', () => {
             this.showPage('mainPage');
             this.updateStats();
             this.updateRecentProducts();
         });
         
-        // Форма товара
-        document.getElementById('productForm').addEventListener('submit', (e) => {
+        document.getElementById('backFromManageBtn')?.addEventListener('click', () => {
+            this.showPage('mainPage');
+            this.updateStats();
+            this.updateRecentProducts();
+        });
+
+        // Форма добавления товара
+        document.getElementById('productForm')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.addProduct();
         });
+
+        // Установка сегодняшней даты по умолчанию
+        const purchaseDateInput = document.getElementById('purchaseDate');
+        if (purchaseDateInput) {
+            purchaseDateInput.valueAsDate = new Date();
+        }
+    }
+
+    setupManagementListeners() {
+        // Поиск и сортировка
+        document.getElementById('searchProducts')?.addEventListener('input', (e) => {
+            this.filterProducts(e.target.value);
+        });
         
+        document.getElementById('sortProducts')?.addEventListener('change', (e) => {
+            this.sortProducts(e.target.value);
+        });
+
+        // Экспорт товаров
+        document.getElementById('exportProductsBtn')?.addEventListener('click', () => {
+            this.exportProductsData();
+        });
+    }
+
+    setupAnalyticsListeners() {
         // Экспорт
-        document.getElementById('exportAllBtn').addEventListener('click', () => {
+        document.getElementById('exportAllBtn')?.addEventListener('click', () => {
             this.exportAllData();
         });
-        
-        // Экспорт отдельных таблиц
-        document.querySelectorAll('.export-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tableId = e.target.getAttribute('data-table');
-                this.exportTable(tableId);
-            });
+
+        // Обновление таблиц
+        document.getElementById('refreshProducts')?.addEventListener('click', () => {
+            this.updateTables();
         });
-        
+
         // Табы аналитики
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -135,66 +222,163 @@ class ProductAnalytics {
                 this.switchTab(tabName);
             });
         });
-        
-        console.log('Event listeners setup complete');
+
+        // Экспорт таблиц
+        document.querySelectorAll('.export-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tableId = e.target.getAttribute('data-table');
+                this.exportTable(tableId);
+            });
+        });
     }
 
-    switchTab(tabName) {
-        // Убираем активный класс у всех кнопок и контента
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
+    setupModalListeners() {
+        // Модальное окно удаления
+        document.getElementById('confirmDelete')?.addEventListener('click', () => {
+            this.confirmDeleteProduct();
         });
         
-        // Добавляем активный класс выбранной кнопке и контенту
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-        document.getElementById(`${tabName}Tab`).classList.add('active');
-        
-        this.currentTab = tabName;
-        
-        // Обновляем графики для выбранной вкладки
-        this.updateTabCharts(tabName);
+        document.getElementById('cancelDelete')?.addEventListener('click', () => {
+            this.hideDeleteModal();
+        });
     }
 
-    updateTabCharts(tabName) {
-        this.destroyCharts();
-        
-        switch(tabName) {
-            case 'overview':
-                this.createOverviewCharts();
-                break;
-            case 'marketplaces':
-                this.createMarketplaceCharts();
-                break;
-            case 'categories':
-                this.createCategoryCharts();
-                break;
-            case 'prices':
-                this.createPriceCharts();
-                break;
-            case 'timeline':
-                this.createTimelineCharts();
-                break;
-            case 'comparison':
-                this.createComparisonCharts();
-                break;
+    // АУТЕНТИФИКАЦИЯ
+    checkAuth() {
+        if (this.currentUser) {
+            this.showPage('mainPage');
+            this.updateStats();
+            this.updateRecentProducts();
+            this.updateUserWelcome();
+        } else {
+            this.showPage('loginPage');
         }
     }
 
+    handleLogin() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        const user = this.users.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+            this.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            this.showPage('mainPage');
+            this.updateStats();
+            this.updateRecentProducts();
+            this.updateUserWelcome();
+            this.showNotification('🎉 Вход выполнен успешно!', 'success');
+        } else {
+            this.showNotification('❌ Неверные данные для входа!', 'error');
+        }
+    }
+
+    demoLogin() {
+        document.getElementById('loginUsername').value = 'demo';
+        document.getElementById('loginPassword').value = 'demo123';
+        this.handleLogin();
+    }
+
+    handleRegister() {
+        const username = document.getElementById('regUsername').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+        // Валидация
+        if (password !== confirmPassword) {
+            this.showNotification('❌ Пароли не совпадают!', 'error');
+            return;
+        }
+
+        if (this.users.find(u => u.username === username)) {
+            this.showNotification('❌ Пользователь с таким именем уже существует!', 'error');
+            return;
+        }
+
+        if (this.users.find(u => u.email === email)) {
+            this.showNotification('❌ Пользователь с таким email уже существует!', 'error');
+            return;
+        }
+
+        // Создание пользователя
+        const newUser = {
+            id: this.generateId(),
+            username,
+            email,
+            password,
+            createdAt: new Date().toISOString(),
+            products: []
+        };
+
+        this.users.push(newUser);
+        this.saveUsers();
+        
+        this.showNotification('✅ Аккаунт создан! Теперь войдите.', 'success');
+        this.showPage('loginPage');
+        document.getElementById('registerForm').reset();
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        this.showPage('loginPage');
+        document.getElementById('loginForm').reset();
+        this.showNotification('👋 Вы вышли из системы', 'info');
+    }
+
+    updateUserWelcome() {
+        const welcome = document.getElementById('userWelcome');
+        if (welcome && this.currentUser) {
+            welcome.textContent = `👋 Добро пожаловать, ${this.currentUser.username}!`;
+        }
+    }
+
+    // ОСНОВНЫЕ ФУНКЦИИ
     showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
             page.classList.remove('active');
         });
-        document.getElementById(pageId).classList.add('active');
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+        }
     }
 
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 
+    getCurrentUserProducts() {
+        if (!this.currentUser) return [];
+        const user = this.users.find(u => u.id === this.currentUser.id);
+        return user ? (user.products || []) : [];
+    }
+
+    saveUserProducts(products) {
+        if (!this.currentUser) return;
+        
+        const userIndex = this.users.findIndex(u => u.id === this.currentUser.id);
+        if (userIndex !== -1) {
+            this.users[userIndex].products = products;
+            this.currentUser.products = products;
+            this.saveUsers();
+            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+        }
+    }
+
+    saveUsers() {
+        localStorage.setItem('users', JSON.stringify(this.users));
+    }
+
+    // УПРАВЛЕНИЕ ТОВАРАМИ
     addProduct() {
+        if (!this.currentUser) {
+            this.showNotification('❌ Ошибка: пользователь не авторизован', 'error');
+            return;
+        }
+        
         const product = {
             id: this.generateId(),
             marketplace: document.getElementById('marketplace').value,
@@ -203,44 +387,49 @@ class ProductAnalytics {
             price: parseFloat(document.getElementById('price').value),
             date: new Date().toISOString(),
             purchaseDate: document.getElementById('purchaseDate').value || new Date().toISOString().split('T')[0],
-            notes: document.getElementById('notes').value
+            notes: document.getElementById('notes').value,
+            rating: document.getElementById('rating').value || null
         };
 
-        this.products.push(product);
-        this.saveProducts();
+        const userProducts = this.getCurrentUserProducts();
+        userProducts.push(product);
+        this.saveUserProducts(userProducts);
         
-        // Сбрасываем форму
+        // Сброс формы
         document.getElementById('productForm').reset();
         document.getElementById('purchaseDate').valueAsDate = new Date();
         
         this.showPage('mainPage');
         this.updateStats();
         this.updateRecentProducts();
-        this.showNotification('Товар успешно добавлен!', 'success');
-    }
-
-    saveProducts() {
-        localStorage.setItem('products', JSON.stringify(this.products));
+        this.showNotification('✅ Товар успешно добавлен!', 'success');
     }
 
     updateStats() {
-        const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
+        const totalProducts = products.length;
+        const totalValue = products.reduce((sum, product) => sum + product.price, 0);
         const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
-        const uniqueCategories = new Set(this.products.map(p => p.category)).size;
+        const uniqueCategories = new Set(products.map(p => p.category)).size;
 
         document.getElementById('totalProducts').textContent = totalProducts;
-        document.getElementById('totalValue').textContent = `${totalValue.toFixed(2)}₽`;
-        document.getElementById('avgPrice').textContent = `${avgPrice.toFixed(2)}₽`;
+        document.getElementById('totalValue').textContent = `${totalValue.toLocaleString('ru-RU')}₽`;
+        document.getElementById('avgPrice').textContent = `${avgPrice.toLocaleString('ru-RU', {maximumFractionDigits: 2})}₽`;
         document.getElementById('totalCategories').textContent = uniqueCategories;
     }
 
     updateRecentProducts() {
-        const recentProducts = this.products
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
+        const recentProducts = products
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5);
         
         const recentProductsList = document.getElementById('recentProductsList');
+        if (!recentProductsList) return;
         
         if (recentProducts.length === 0) {
             recentProductsList.innerHTML = '<p class="no-products">Нет добавленных товаров</p>';
@@ -254,55 +443,226 @@ class ProductAnalytics {
                     <div class="product-details">
                         ${this.formatMarketplaceName(product.marketplace)} • ${this.formatCategoryName(product.category)}
                         ${product.purchaseDate ? ` • ${new Date(product.purchaseDate).toLocaleDateString('ru-RU')}` : ''}
+                        ${product.rating ? ` • ${'⭐'.repeat(product.rating)}` : ''}
                     </div>
                 </div>
-                <div class="product-price">${product.price.toFixed(2)}₽</div>
+                <div class="product-price">${product.price.toLocaleString('ru-RU')}₽</div>
             </div>
         `).join('');
     }
 
+    // УПРАВЛЕНИЕ ТОВАРАМИ
+    loadProductsManagement() {
+        const products = this.getCurrentUserProducts();
+        const container = document.getElementById('productsManagementList');
+        if (!container) return;
+
+        if (products.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <h3>Нет товаров</h3>
+                    <p>Добавьте первый товар, чтобы начать работу</p>
+                    <button class="btn btn-primary" onclick="app.showPage('addProductPage')">
+                        ➕ Добавить товар
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = products
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .map(product => `
+            <div class="product-management-item" data-product-id="${product.id}">
+                <div class="product-mgmt-info">
+                    <div class="product-mgmt-name">${product.name}</div>
+                    <div class="product-mgmt-details">
+                        ${this.formatMarketplaceName(product.marketplace)} • ${this.formatCategoryName(product.category)}
+                        • ${new Date(product.date).toLocaleDateString('ru-RU')}
+                        ${product.rating ? ` • ${'⭐'.repeat(product.rating)}` : ''}
+                    </div>
+                </div>
+                <div class="product-mgmt-price">${product.price.toLocaleString('ru-RU')}₽</div>
+                <div class="product-mgmt-actions">
+                    <button class="btn btn-danger btn-sm" onclick="app.showDeleteModal('${product.id}')">
+                        🗑️ Удалить
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    filterProducts(searchTerm) {
+        const products = this.getCurrentUserProducts();
+        const filtered = products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            this.formatMarketplaceName(product.marketplace).toLowerCase().includes(searchTerm.toLowerCase()) ||
+            this.formatCategoryName(product.category).toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        this.renderFilteredProducts(filtered);
+    }
+
+    sortProducts(sortType) {
+        const products = this.getCurrentUserProducts();
+        let sorted = [...products];
+        
+        switch(sortType) {
+            case 'date-desc':
+                sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                break;
+            case 'date-asc':
+                sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                break;
+            case 'price-desc':
+                sorted.sort((a, b) => b.price - a.price);
+                break;
+            case 'price-asc':
+                sorted.sort((a, b) => a.price - b.price);
+                break;
+            case 'name-asc':
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-desc':
+                sorted.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+        }
+        
+        this.renderFilteredProducts(sorted);
+    }
+
+    renderFilteredProducts(products) {
+        const container = document.getElementById('productsManagementList');
+        if (!container) return;
+
+        container.innerHTML = products.map(product => `
+            <div class="product-management-item" data-product-id="${product.id}">
+                <div class="product-mgmt-info">
+                    <div class="product-mgmt-name">${product.name}</div>
+                    <div class="product-mgmt-details">
+                        ${this.formatMarketplaceName(product.marketplace)} • ${this.formatCategoryName(product.category)}
+                        • ${new Date(product.date).toLocaleDateString('ru-RU')}
+                        ${product.rating ? ` • ${'⭐'.repeat(product.rating)}` : ''}
+                    </div>
+                </div>
+                <div class="product-mgmt-price">${product.price.toLocaleString('ru-RU')}₽</div>
+                <div class="product-mgmt-actions">
+                    <button class="btn btn-danger btn-sm" onclick="app.showDeleteModal('${product.id}')">
+                        🗑️ Удалить
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // УДАЛЕНИЕ ТОВАРОВ
+    showDeleteModal(productId) {
+        this.productsToDelete = productId;
+        const modal = document.getElementById('deleteModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
+    hideDeleteModal() {
+        this.productsToDelete = null;
+        const modal = document.getElementById('deleteModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    confirmDeleteProduct() {
+        if (!this.productsToDelete) return;
+        
+        const userProducts = this.getCurrentUserProducts();
+        const updatedProducts = userProducts.filter(product => product.id !== this.productsToDelete);
+        this.saveUserProducts(updatedProducts);
+        
+        this.hideDeleteModal();
+        this.loadProductsManagement();
+        this.updateStats();
+        this.updateRecentProducts();
+        this.showNotification('✅ Товар успешно удален!', 'success');
+    }
+
+    // АНАЛИТИКА
     updateAnalytics() {
+        if (!this.currentUser) return;
+        
         this.updateAnalyticsStats();
-        this.updateTabCharts(this.currentTab);
+        this.destroyCharts();
+        this.updateTabCharts('overview');
         this.updateTables();
     }
 
     updateAnalyticsStats() {
-        const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.price, 0);
+        const products = this.getCurrentUserProducts();
+        const totalProducts = products.length;
+        const totalValue = products.reduce((sum, product) => sum + product.price, 0);
         const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
-        const uniqueMarketplaces = new Set(this.products.map(p => p.marketplace)).size;
+        const uniqueMarketplaces = new Set(products.map(p => p.marketplace)).size;
 
         document.getElementById('analyticsTotalProducts').textContent = totalProducts;
-        document.getElementById('analyticsTotalValue').textContent = `${totalValue.toFixed(2)}₽`;
-        document.getElementById('analyticsAvgPrice').textContent = `${avgPrice.toFixed(2)}₽`;
+        document.getElementById('analyticsTotalValue').textContent = `${totalValue.toLocaleString('ru-RU')}₽`;
+        document.getElementById('analyticsAvgPrice').textContent = `${avgPrice.toLocaleString('ru-RU', {maximumFractionDigits: 2})}₽`;
         document.getElementById('analyticsMarketplaces').textContent = uniqueMarketplaces;
     }
 
-    destroyCharts() {
-        Object.values(this.charts).forEach(chart => {
-            if (chart) chart.destroy();
+    switchTab(tabName) {
+        // Убираем активный класс у всех кнопок и контента
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
-        this.charts = {};
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Добавляем активный класс выбранной кнопке и контенту
+        const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
+        const tabContent = document.getElementById(`${tabName}Tab`);
+        
+        if (tabBtn) tabBtn.classList.add('active');
+        if (tabContent) tabContent.classList.add('active');
+        
+        // Обновляем графики для выбранной вкладки
+        this.updateTabCharts(tabName);
     }
 
-    // ГРАФИКИ ДЛЯ ОБЗОРА
-    createOverviewCharts() {
-        if (this.products.length === 0) return;
+    updateTabCharts(tabName) {
+        this.destroyCharts();
+        
+        // Создаем несколько базовых графиков для демонстрации
+        this.createBasicCharts();
+    }
 
+    createBasicCharts() {
+        const products = this.getCurrentUserProducts();
+        if (products.length === 0) {
+            this.showNotification('📊 Добавьте товары для просмотра аналитики', 'info');
+            return;
+        }
+
+        // График 1: Распределение по маркетплейсам
         this.createMarketplaceChart();
+        
+        // График 2: Распределение по категориям
         this.createCategoryChart();
+        
+        // График 3: Средние цены
         this.createAvgPriceChart();
+        
+        // График 4: Динамика по месяцам
         this.createMonthlyChart();
-        this.createTopProductsChart();
-        this.createCategoryValueChart();
     }
 
     createMarketplaceChart() {
+        const products = this.getCurrentUserProducts();
         const data = this.getCountByField('marketplace');
-        const ctx = document.getElementById('marketplaceChart').getContext('2d');
+        const ctx = document.getElementById('marketplaceChart');
+        if (!ctx) return;
         
-        this.charts.marketplace = new Chart(ctx, {
+        this.charts.marketplace = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
@@ -316,18 +676,19 @@ class ProductAnalytics {
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: 'Распределение по маркетплейсам' }
+                    legend: { position: 'bottom' }
                 }
             }
         });
     }
 
     createCategoryChart() {
+        const products = this.getCurrentUserProducts();
         const data = this.getCountByField('category');
-        const ctx = document.getElementById('categoryChart').getContext('2d');
+        const ctx = document.getElementById('categoryChart');
+        if (!ctx) return;
         
-        this.charts.category = new Chart(ctx, {
+        this.charts.category = new Chart(ctx.getContext('2d'), {
             type: 'pie',
             data: {
                 labels: Object.keys(data).map(key => this.formatCategoryName(key)),
@@ -340,10 +701,12 @@ class ProductAnalytics {
     }
 
     createAvgPriceChart() {
+        const products = this.getCurrentUserProducts();
         const data = this.getAvgPriceByMarketplace();
-        const ctx = document.getElementById('avgPriceChart').getContext('2d');
+        const ctx = document.getElementById('avgPriceChart');
+        if (!ctx) return;
         
-        this.charts.avgPrice = new Chart(ctx, {
+        this.charts.avgPrice = new Chart(ctx.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
@@ -361,10 +724,12 @@ class ProductAnalytics {
     }
 
     createMonthlyChart() {
+        const products = this.getCurrentUserProducts();
         const data = this.getMonthlyData();
-        const ctx = document.getElementById('monthlyChart').getContext('2d');
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx) return;
         
-        this.charts.monthly = new Chart(ctx, {
+        this.charts.monthly = new Chart(ctx.getContext('2d'), {
             type: 'line',
             data: {
                 labels: Object.keys(data),
@@ -380,349 +745,25 @@ class ProductAnalytics {
         });
     }
 
-    createTopProductsChart() {
-        const topProducts = this.products
-            .sort((a, b) => b.price - a.price)
-            .slice(0, 8);
-        
-        const ctx = document.getElementById('topProductsChart').getContext('2d');
-        
-        this.charts.topProducts = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: topProducts.map(p => this.truncateText(p.name, 15)),
-                datasets: [{
-                    label: 'Цена (₽)',
-                    data: topProducts.map(p => p.price),
-                    backgroundColor: '#45B7D1'
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true
-            }
+    destroyCharts() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart) chart.destroy();
         });
-    }
-
-    createCategoryValueChart() {
-        const data = this.getTotalValueByCategory();
-        const ctx = document.getElementById('categoryValueChart').getContext('2d');
-        
-        this.charts.categoryValue = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
-                datasets: [{
-                    data: Object.values(data),
-                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']
-                }]
-            }
-        });
-    }
-
-    // ГРАФИКИ ДЛЯ МАРКЕТПЛЕЙСОВ
-    createMarketplaceCharts() {
-        if (this.products.length === 0) return;
-
-        this.createMarketplaceShareChart();
-        this.createMarketplaceValueChart();
-        this.createMarketplaceTrendChart();
-        this.createMarketplaceEfficiencyChart();
-    }
-
-    createMarketplaceShareChart() {
-        const data = this.getCountByField('marketplace');
-        const total = Object.values(data).reduce((a, b) => a + b, 0);
-        const percentages = Object.values(data).map(value => (value / total * 100).toFixed(1));
-        
-        const ctx = document.getElementById('marketplaceShareChart').getContext('2d');
-        
-        this.charts.marketplaceShare = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
-                datasets: [{
-                    label: 'Доля (%)',
-                    data: percentages,
-                    backgroundColor: '#6366f1'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, max: 100 } }
-            }
-        });
-    }
-
-    createMarketplaceValueChart() {
-        const data = this.getTotalValueByMarketplace();
-        const ctx = document.getElementById('marketplaceValueChart').getContext('2d');
-        
-        this.charts.marketplaceValue = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(data).map(key => this.formatMarketplaceName(key)),
-                datasets: [{
-                    label: 'Общая стоимость (₽)',
-                    data: Object.values(data),
-                    backgroundColor: '#10b981'
-                }]
-            }
-        });
-    }
-
-    createMarketplaceTrendChart() {
-        const monthlyData = this.getMonthlyDataByMarketplace();
-        const marketplaces = Object.keys(monthlyData);
-        const months = Object.keys(monthlyData[marketplaces[0]] || {});
-        
-        const ctx = document.getElementById('marketplaceTrendChart').getContext('2d');
-        
-        this.charts.marketplaceTrend = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: marketplaces.map((mp, index) => ({
-                    label: this.formatMarketplaceName(mp),
-                    data: months.map(month => monthlyData[mp][month] || 0),
-                    borderColor: this.getColor(index),
-                    tension: 0.4,
-                    fill: false
-                }))
-            }
-        });
-    }
-
-    createMarketplaceEfficiencyChart() {
-        const efficiencyData = this.getMarketplaceEfficiency();
-        const ctx = document.getElementById('marketplaceEfficiencyChart').getContext('2d');
-        
-        this.charts.marketplaceEfficiency = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Количество', 'Стоимость', 'Средняя цена', 'Частота'],
-                datasets: [{
-                    label: 'Эффективность маркетплейсов',
-                    data: Object.values(efficiencyData),
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: '#6366f1'
-                }]
-            }
-        });
-    }
-
-    // ГРАФИКИ ДЛЯ КАТЕГОРИЙ
-    createCategoryCharts() {
-        if (this.products.length === 0) return;
-
-        this.createCategoryShareChart();
-        this.createCategorySpendingChart();
-        this.createCategoryTrendChart();
-        this.createCategoryPriceDistributionChart();
-    }
-
-    createCategoryShareChart() {
-        const data = this.getCountByField('category');
-        const ctx = document.getElementById('categoryShareChart').getContext('2d');
-        
-        this.charts.categoryShare = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
-                datasets: [{
-                    data: Object.values(data),
-                    backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
-                }]
-            }
-        });
-    }
-
-    createCategorySpendingChart() {
-        const data = this.getTotalValueByCategory();
-        const ctx = document.getElementById('categorySpendingChart').getContext('2d');
-        
-        this.charts.categorySpending = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(data).map(key => this.formatCategoryName(key)),
-                datasets: [{
-                    label: 'Потрачено (₽)',
-                    data: Object.values(data),
-                    backgroundColor: '#f59e0b'
-                }]
-            }
-        });
-    }
-
-    // ГРАФИКИ ДЛЯ ЦЕН
-    createPriceCharts() {
-        if (this.products.length === 0) return;
-
-        this.createPriceDistributionChart();
-        this.createPriceSegmentsChart();
-        this.createPriceTrendChart();
-        this.createPriceComparisonChart();
-    }
-
-    createPriceDistributionChart() {
-        const prices = this.products.map(p => p.price);
-        const ctx = document.getElementById('priceDistributionChart').getContext('2d');
-        
-        this.charts.priceDistribution = new Chart(ctx, {
-            type: 'histogram',
-            data: {
-                datasets: [{
-                    label: 'Распределение цен',
-                    data: prices,
-                    backgroundColor: 'rgba(99, 102, 241, 0.5)'
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'linear',
-                        position: 'bottom',
-                        title: { display: true, text: 'Цена (₽)' }
-                    },
-                    y: {
-                        title: { display: true, text: 'Количество' }
-                    }
-                }
-            }
-        });
-    }
-
-    createPriceSegmentsChart() {
-        const segments = {
-            'До 1000₽': this.products.filter(p => p.price < 1000).length,
-            '1000-5000₽': this.products.filter(p => p.price >= 1000 && p.price < 5000).length,
-            '5000-10000₽': this.products.filter(p => p.price >= 5000 && p.price < 10000).length,
-            '10000-50000₽': this.products.filter(p => p.price >= 10000 && p.price < 50000).length,
-            'Свыше 50000₽': this.products.filter(p => p.price >= 50000).length
-        };
-        
-        const ctx = document.getElementById('priceSegmentsChart').getContext('2d');
-        
-        this.charts.priceSegments = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(segments),
-                datasets: [{
-                    data: Object.values(segments),
-                    backgroundColor: ['#4ECDC4', '#45B7D1', '#FF6B6B', '#FFEAA7', '#96CEB4']
-                }]
-            }
-        });
-    }
-
-    // ГРАФИКИ ДЛЯ ВРЕМЕНИ
-    createTimelineCharts() {
-        if (this.products.length === 0) return;
-
-        this.createDailyChart();
-        this.createWeeklyChart();
-        this.createPurchaseTrendChart();
-        this.createSpendingTimelineChart();
-    }
-
-    createDailyChart() {
-        const dailyData = this.getDailyData();
-        const ctx = document.getElementById('dailyChart').getContext('2d');
-        
-        this.charts.daily = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Object.keys(dailyData).slice(-30), // Последние 30 дней
-                datasets: [{
-                    label: 'Покупки по дням',
-                    data: Object.values(dailyData).slice(-30),
-                    borderColor: '#8b5cf6',
-                    tension: 0.4
-                }]
-            }
-        });
-    }
-
-    // ГРАФИКИ ДЛЯ СРАВНЕНИЯ
-    createComparisonCharts() {
-        if (this.products.length === 0) return;
-
-        this.createMarketplaceComparisonChart();
-        this.createCategoryComparisonChart();
-        this.createRadarChart();
-        this.createBubbleChart();
-    }
-
-    createMarketplaceComparisonChart() {
-        const countData = this.getCountByField('marketplace');
-        const valueData = this.getTotalValueByMarketplace();
-        
-        const ctx = document.getElementById('marketplaceComparisonChart').getContext('2d');
-        
-        this.charts.marketplaceComparison = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(countData).map(key => this.formatMarketplaceName(key)),
-                datasets: [
-                    {
-                        label: 'Количество товаров',
-                        data: Object.values(countData),
-                        backgroundColor: '#4ECDC4',
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Общая стоимость (тыс. ₽)',
-                        data: Object.values(valueData).map(v => v / 1000),
-                        backgroundColor: '#FF6B6B',
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                    },
-                    y1: {
-                        type: 'linear',
-                        position: 'right',
-                        grid: { drawOnChartArea: false }
-                    }
-                }
-            }
-        });
-    }
-
-    createRadarChart() {
-        const marketplaceData = this.getMarketplaceStats();
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        
-        this.charts.radar = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: Object.keys(marketplaceData).map(key => this.formatMarketplaceName(key)),
-                datasets: [{
-                    label: 'Количество товаров',
-                    data: Object.values(marketplaceData).map(stats => stats.count),
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: '#6366f1'
-                }]
-            }
-        });
+        this.charts = {};
     }
 
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ АНАЛИТИКИ
     getCountByField(field) {
-        return this.products.reduce((acc, product) => {
+        const products = this.getCurrentUserProducts();
+        return products.reduce((acc, product) => {
             acc[product[field]] = (acc[product[field]] || 0) + 1;
             return acc;
         }, {});
     }
 
     getAvgPriceByMarketplace() {
-        const groups = this.products.reduce((acc, product) => {
+        const products = this.getCurrentUserProducts();
+        const groups = products.reduce((acc, product) => {
             if (!acc[product.marketplace]) {
                 acc[product.marketplace] = { total: 0, count: 0 };
             }
@@ -737,22 +778,9 @@ class ProductAnalytics {
         }, {});
     }
 
-    getTotalValueByMarketplace() {
-        return this.products.reduce((acc, product) => {
-            acc[product.marketplace] = (acc[product.marketplace] || 0) + product.price;
-            return acc;
-        }, {});
-    }
-
-    getTotalValueByCategory() {
-        return this.products.reduce((acc, product) => {
-            acc[product.category] = (acc[product.category] || 0) + product.price;
-            return acc;
-        }, {});
-    }
-
     getMonthlyData() {
-        return this.products.reduce((acc, product) => {
+        const products = this.getCurrentUserProducts();
+        return products.reduce((acc, product) => {
             const month = new Date(product.date).toLocaleDateString('ru-RU', { 
                 year: 'numeric', 
                 month: 'short' 
@@ -762,31 +790,84 @@ class ProductAnalytics {
         }, {});
     }
 
-    getMonthlyDataByMarketplace() {
-        const result = {};
-        this.products.forEach(product => {
-            const month = new Date(product.date).toLocaleDateString('ru-RU', { 
-                year: 'numeric', 
-                month: 'short' 
-            });
-            if (!result[product.marketplace]) {
-                result[product.marketplace] = {};
-            }
-            result[product.marketplace][month] = (result[product.marketplace][month] || 0) + 1;
-        });
-        return result;
+    // ТАБЛИЦЫ
+    updateTables() {
+        this.updateMarketplaceTable();
+        this.updateCategoryTable();
+        this.updateProductsTable();
     }
 
-    getDailyData() {
-        return this.products.reduce((acc, product) => {
-            const date = new Date(product.date).toLocaleDateString('ru-RU');
-            acc[date] = (acc[date] || 0) + 1;
-            return acc;
-        }, {});
+    updateMarketplaceTable() {
+        const products = this.getCurrentUserProducts();
+        const stats = this.getMarketplaceStats();
+        const tableBody = document.querySelector('#marketplaceTable tbody');
+        if (!tableBody) return;
+        
+        const totalProducts = products.length;
+        
+        tableBody.innerHTML = Object.entries(stats).map(([marketplace, data]) => {
+            const percentage = totalProducts > 0 ? ((data.count / totalProducts) * 100).toFixed(1) : 0;
+            return `
+                <tr>
+                    <td>${this.formatMarketplaceName(marketplace)}</td>
+                    <td>${data.count}</td>
+                    <td>${data.total.toLocaleString('ru-RU')}₽</td>
+                    <td>${data.average.toLocaleString('ru-RU', {maximumFractionDigits: 2})}₽</td>
+                    <td>${percentage}%</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    updateCategoryTable() {
+        const products = this.getCurrentUserProducts();
+        const stats = this.getCategoryStats();
+        const tableBody = document.querySelector('#categoryTable tbody');
+        if (!tableBody) return;
+        
+        const totalProducts = products.length;
+        
+        tableBody.innerHTML = Object.entries(stats).map(([category, data]) => {
+            const percentage = totalProducts > 0 ? ((data.count / totalProducts) * 100).toFixed(1) : 0;
+            return `
+                <tr>
+                    <td>${this.formatCategoryName(category)}</td>
+                    <td>${data.count}</td>
+                    <td>${data.total.toLocaleString('ru-RU')}₽</td>
+                    <td>${data.average.toLocaleString('ru-RU', {maximumFractionDigits: 2})}₽</td>
+                    <td>${percentage}%</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    updateProductsTable() {
+        const products = this.getCurrentUserProducts();
+        const tableBody = document.querySelector('#productsTable tbody');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = products
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .map(product => `
+            <tr>
+                <td>${new Date(product.date).toLocaleDateString('ru-RU')}</td>
+                <td>${this.formatMarketplaceName(product.marketplace)}</td>
+                <td>${this.formatCategoryName(product.category)}</td>
+                <td>${product.name}</td>
+                <td>${product.price.toLocaleString('ru-RU')}₽</td>
+                <td>${product.rating ? '⭐'.repeat(product.rating) : '-'}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="app.showDeleteModal('${product.id}')">
+                        🗑️ Удалить
+                    </button>
+                </td>
+            </tr>
+        `).join('');
     }
 
     getMarketplaceStats() {
-        const stats = this.products.reduce((acc, product) => {
+        const products = this.getCurrentUserProducts();
+        const stats = products.reduce((acc, product) => {
             if (!acc[product.marketplace]) {
                 acc[product.marketplace] = { count: 0, total: 0 };
             }
@@ -802,110 +883,9 @@ class ProductAnalytics {
         return stats;
     }
 
-    getMarketplaceEfficiency() {
-        // Упрощенный расчет эффективности
-        const stats = this.getMarketplaceStats();
-        const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, p) => sum + p.price, 0);
-        
-        return Object.keys(stats).reduce((acc, mp) => {
-            const mpStats = stats[mp];
-            acc[mp] = (mpStats.count / totalProducts * 100 + mpStats.total / totalValue * 100) / 2;
-            return acc;
-        }, {});
-    }
-
-    getColor(index) {
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
-        return colors[index % colors.length];
-    }
-
-    formatMarketplaceName(marketplace) {
-        const names = {
-            'wildberries': 'Wildberries',
-            'ozon': 'Ozon',
-            'yandex': 'Яндекс Маркет',
-            'aliexpress': 'AliExpress',
-            'amazon': 'Amazon',
-            'sbermegamarket': 'СберМегаМаркет'
-        };
-        return names[marketplace] || marketplace;
-    }
-
-    formatCategoryName(category) {
-        const names = {
-            'electronics': 'Электроника',
-            'clothing': 'Одежда',
-            'books': 'Книги',
-            'home': 'Дом и сад',
-            'sports': 'Спорт',
-            'beauty': 'Красота',
-            'toys': 'Игрушки',
-            'food': 'Продукты питания',
-            'auto': 'Автотовары',
-            'health': 'Здоровье'
-        };
-        return names[category] || category;
-    }
-
-    truncateText(text, maxLength) {
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    }
-
-    // Остальные методы (updateTables, export и т.д.) остаются без изменений
-    updateTables() {
-        this.updateMarketplaceTable();
-        this.updateCategoryTable();
-        this.updateProductsTable();
-    }
-
-    updateMarketplaceTable() {
-        const stats = this.getMarketplaceStats();
-        const tableBody = document.querySelector('#marketplaceTable tbody');
-        
-        tableBody.innerHTML = Object.entries(stats).map(([marketplace, data]) => `
-            <tr>
-                <td>${this.formatMarketplaceName(marketplace)}</td>
-                <td>${data.count}</td>
-                <td>${data.total.toFixed(2)}₽</td>
-                <td>${data.average.toFixed(2)}₽</td>
-            </tr>
-        `).join('');
-    }
-
-    updateCategoryTable() {
-        const stats = this.getCategoryStats();
-        const tableBody = document.querySelector('#categoryTable tbody');
-        
-        tableBody.innerHTML = Object.entries(stats).map(([category, data]) => `
-            <tr>
-                <td>${this.formatCategoryName(category)}</td>
-                <td>${data.count}</td>
-                <td>${data.total.toFixed(2)}₽</td>
-                <td>${data.average.toFixed(2)}₽</td>
-            </tr>
-        `).join('');
-    }
-
-    updateProductsTable() {
-        const tableBody = document.querySelector('#productsTable tbody');
-        
-        tableBody.innerHTML = this.products
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map(product => `
-            <tr>
-                <td>${new Date(product.date).toLocaleDateString('ru-RU')}</td>
-                <td>${this.formatMarketplaceName(product.marketplace)}</td>
-                <td>${this.formatCategoryName(product.category)}</td>
-                <td>${product.name}</td>
-                <td>${product.price.toFixed(2)}₽</td>
-                <td>${product.notes || '-'}</td>
-            </tr>
-        `).join('');
-    }
-
     getCategoryStats() {
-        const stats = this.products.reduce((acc, product) => {
+        const products = this.getCurrentUserProducts();
+        const stats = products.reduce((acc, product) => {
             if (!acc[product.category]) {
                 acc[product.category] = { count: 0, total: 0 };
             }
@@ -921,45 +901,127 @@ class ProductAnalytics {
         return stats;
     }
 
+    // ФОРМАТИРОВАНИЕ
+    formatMarketplaceName(marketplace) {
+        const names = {
+            'wildberries': 'Wildberries',
+            'ozon': 'Ozon',
+            'yandex': 'Яндекс Маркет',
+            'aliexpress': 'AliExpress',
+            'amazon': 'Amazon',
+            'sbermegamarket': 'СберМегаМаркет',
+            'citilink': 'Citilink',
+            'dns': 'DNS',
+            'mvideo': 'М.Видео',
+            'eldorado': 'Эльдорадо'
+        };
+        return names[marketplace] || marketplace;
+    }
+
+    formatCategoryName(category) {
+        const names = {
+            'electronics': 'Электроника',
+            'clothing': 'Одежда',
+            'books': 'Книги',
+            'home': 'Дом и сад',
+            'sports': 'Спорт',
+            'beauty': 'Красота',
+            'toys': 'Игрушки',
+            'food': 'Продукты питания',
+            'auto': 'Автотовары',
+            'health': 'Здоровье',
+            'jewelry': 'Украшения',
+            'furniture': 'Мебель',
+            'tools': 'Инструменты',
+            'pet': 'Товары для животных',
+            'office': 'Канцелярия'
+        };
+        return names[category] || category;
+    }
+
+    // ЭКСПОРТ
     exportTable(tableId) {
         const table = document.getElementById(tableId);
+        if (!table) return;
+        
         const ws = XLSX.utils.table_to_sheet(table);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Таблица');
         XLSX.writeFile(wb, `${tableId}_${new Date().toISOString().split('T')[0]}.xlsx`);
-        this.showNotification('Таблица экспортирована в Excel', 'success');
+        this.showNotification('✅ Таблица экспортирована в Excel', 'success');
     }
 
     exportAllData() {
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
         const wb = XLSX.utils.book_new();
         
-        // Экспорт таблиц
-        const tables = ['marketplaceTable', 'categoryTable', 'productsTable'];
-        tables.forEach(tableId => {
-            const table = document.getElementById(tableId);
-            const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, tableId.replace('Table', ''));
-        });
-
-        // Экспорт сырых данных
-        const rawData = this.products.map(product => ({
+        // Экспорт сводки по маркетплейсам
+        const marketplaceStats = this.getMarketplaceStats();
+        const marketplaceData = Object.entries(marketplaceStats).map(([marketplace, data]) => ({
+            'Маркетплейс': this.formatMarketplaceName(marketplace),
+            'Количество товаров': data.count,
+            'Общая стоимость': data.total,
+            'Средняя цена': data.average
+        }));
+        const marketplaceWs = XLSX.utils.json_to_sheet(marketplaceData);
+        XLSX.utils.book_append_sheet(wb, marketplaceWs, 'Маркетплейсы');
+        
+        // Экспорт сводки по категориям
+        const categoryStats = this.getCategoryStats();
+        const categoryData = Object.entries(categoryStats).map(([category, data]) => ({
+            'Категория': this.formatCategoryName(category),
+            'Количество товаров': data.count,
+            'Общая стоимость': data.total,
+            'Средняя цена': data.average
+        }));
+        const categoryWs = XLSX.utils.json_to_sheet(categoryData);
+        XLSX.utils.book_append_sheet(wb, categoryWs, 'Категории');
+        
+        // Экспорт всех товаров
+        const productsData = products.map(product => ({
             'Дата добавления': new Date(product.date).toLocaleDateString('ru-RU'),
             'Дата покупки': product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString('ru-RU') : '-',
             'Маркетплейс': this.formatMarketplaceName(product.marketplace),
             'Категория': this.formatCategoryName(product.category),
             'Товар': product.name,
             'Цена': product.price,
+            'Рейтинг': product.rating || '-',
+            'Примечания': product.notes || ''
+        }));
+        const productsWs = XLSX.utils.json_to_sheet(productsData);
+        XLSX.utils.book_append_sheet(wb, productsWs, 'Все товары');
+        
+        XLSX.writeFile(wb, `product_analytics_${this.currentUser.username}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.showNotification('✅ Все данные экспортированы в Excel', 'success');
+    }
+
+    exportProductsData() {
+        if (!this.currentUser) return;
+        
+        const products = this.getCurrentUserProducts();
+        const productsData = products.map(product => ({
+            'Дата добавления': new Date(product.date).toLocaleDateString('ru-RU'),
+            'Дата покупки': product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString('ru-RU') : '-',
+            'Маркетплейс': this.formatMarketplaceName(product.marketplace),
+            'Категория': this.formatCategoryName(product.category),
+            'Товар': product.name,
+            'Цена': product.price,
+            'Рейтинг': product.rating || '-',
             'Примечания': product.notes || ''
         }));
         
-        const rawWs = XLSX.utils.json_to_sheet(rawData);
-        XLSX.utils.book_append_sheet(wb, rawWs, 'Все данные');
-        
-        XLSX.writeFile(wb, `product_analytics_${new Date().toISOString().split('T')[0]}.xlsx`);
-        this.showNotification('Все данные экспортированы в Excel', 'success');
+        const ws = XLSX.utils.json_to_sheet(productsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Товары');
+        XLSX.writeFile(wb, `products_${this.currentUser.username}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.showNotification('✅ Товары экспортированы в Excel', 'success');
     }
 
+    // УВЕДОМЛЕНИЯ
     showNotification(message, type = 'info') {
+        // Удаляем существующие уведомления
         const existingNotifications = document.querySelectorAll('.notification');
         existingNotifications.forEach(notification => notification.remove());
 
@@ -970,18 +1032,18 @@ class ProductAnalytics {
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-in';
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
             setTimeout(() => {
                 if (notification.parentNode) {
                     document.body.removeChild(notification);
                 }
             }, 300);
-        }, 3000);
+        }, 4000);
     }
 }
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Product Analytics App Starting...');
+    console.log('🚀 Product Analytics Pro Starting...');
     window.app = new ProductAnalytics();
 });
