@@ -6,9 +6,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f8fafc;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #1e293b;
     line-height: 1.6;
+    min-height: 100vh;
 }
 
 .page {
@@ -22,18 +23,20 @@ body {
 
 /* Навигация */
 .navbar {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .nav-brand h2 {
     color: #6366f1;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.5rem;
 }
 
 .nav-actions {
@@ -45,58 +48,85 @@ body {
 .user-welcome {
     color: #64748b;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 /* Кнопки */
 .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    text-decoration: none;
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
 }
 
 .btn-primary {
-    background: #6366f1;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #4f46e5;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
 }
 
 .btn-secondary {
-    background: #64748b;
+    background: linear-gradient(135deg, #64748b, #475569);
     color: white;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #475569, #374151);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
 }
 
 .btn-back {
     background: transparent;
     color: #64748b;
-    border: 1px solid #d1d5db;
+    border: 2px solid #e2e8f0;
 }
 
 .btn-back:hover {
     background: #f8fafc;
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
 }
 
 .btn-large {
     padding: 1rem 2rem;
-    font-size: 16px;
+    font-size: 1.1rem;
 }
 
 .btn-export {
-    background: #10b981;
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
@@ -105,120 +135,157 @@ body {
 /* Главный контент */
 .main-content {
     padding: 2rem;
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
 }
 
 .hero-section {
     text-align: center;
     margin-bottom: 3rem;
+    padding: 3rem 0;
 }
 
 .hero-section h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: #6366f1;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
 }
 
 .hero-section p {
     color: #64748b;
-    font-size: 1.125rem;
+    font-size: 1.25rem;
+    font-weight: 500;
 }
 
 /* Карточки действий */
 .action-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
 }
 
 .action-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
     border: none;
     cursor: pointer;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .action-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    background: rgba(255, 255, 255, 1);
 }
 
 .action-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: grayscale(0.3);
+    transition: filter 0.3s;
+}
+
+.action-card:hover .action-icon {
+    filter: grayscale(0);
 }
 
 .action-card h3 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 .action-card p {
     color: #64748b;
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
 /* Быстрая статистика */
 .quick-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
 }
 
 .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
 
 .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 2.5rem;
+    font-weight: 800;
     color: #6366f1;
     margin-bottom: 0.5rem;
 }
 
 .stat-label {
     color: #64748b;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Большие карточки статистики */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
 }
 
 .stat-card-large {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card-large:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
 
 .stat-card-large .stat-icon {
-    font-size: 2rem;
-    width: 60px;
-    height: 60px;
+    font-size: 2.5rem;
+    width: 70px;
+    height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #6366f1;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
-    border-radius: 8px;
+    border-radius: 16px;
 }
 
 .stat-card-large .stat-content {
@@ -226,28 +293,33 @@ body {
 }
 
 .stat-card-large .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.8rem;
+    font-weight: 800;
     color: #1e293b;
     margin-bottom: 0.25rem;
 }
 
 .stat-card-large .stat-label {
     color: #64748b;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 /* Последние товары */
 .recent-products {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .recent-products h3 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 .products-list {
@@ -259,10 +331,16 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 8px;
+    padding: 1.5rem;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 12px;
     border-left: 4px solid #6366f1;
+    transition: all 0.3s ease;
+}
+
+.product-item:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateX(5px);
 }
 
 .product-info {
@@ -271,7 +349,8 @@ body {
 
 .product-name {
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
 }
 
 .product-details {
@@ -282,47 +361,132 @@ body {
 .product-price {
     font-weight: 700;
     color: #6366f1;
+    font-size: 1.1rem;
 }
 
 .no-products {
     text-align: center;
     color: #64748b;
     font-style: italic;
-    padding: 2rem;
+    padding: 3rem;
+    background: rgba(248, 250, 252, 0.5);
+    border-radius: 12px;
+    border: 2px dashed #e2e8f0;
 }
 
 /* Формы */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #6366f1;
+    font-weight: 800;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auth-switch {
+    margin-top: 2rem;
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.auth-switch a {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.auth-switch a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.auth-demo {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.auth-demo p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
 .form-container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
 .product-form {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-section {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .form-section h3 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: #1e293b;
     border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
+    font-weight: 700;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
     color: #374151;
 }
 
@@ -330,12 +494,13 @@ body {
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
     font-family: inherit;
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .form-group input:focus,
@@ -344,63 +509,122 @@ body {
     outline: none;
     border-color: #6366f1;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: rgba(255, 255, 255, 1);
 }
 
 .form-group textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 100px;
 }
 
 .form-actions {
     text-align: center;
-    margin-top: 2rem;
+    margin-top: 3rem;
+}
+
+/* Управление товарами */
+.manage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.manage-header h3 {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.manage-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.sort-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.products-management {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.products-management-list {
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 /* Аналитика */
 .analytics-section {
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
 }
 
 .analytics-section h3 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: #1e293b;
     border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
+    font-weight: 700;
+    font-size: 1.5rem;
 }
 
 /* Табы аналитики */
 .analytics-tabs {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     flex-wrap: wrap;
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 1rem;
 }
 
 .tab-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 1.5rem;
     border: none;
-    border-radius: 8px;
-    background: #f8fafc;
+    border-radius: 12px;
+    background: rgba(248, 250, 252, 0.8);
     color: #64748b;
     cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    white-space: nowrap;
 }
 
 .tab-btn:hover {
-    background: #e2e8f0;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
     transform: translateY(-2px);
 }
 
 .tab-btn.active {
-    background: #6366f1;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
-    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
 }
 
 .tab-content {
@@ -409,45 +633,65 @@ body {
 
 .tab-content.active {
     display: block;
-    animation: fadeIn 0.5s ease-in;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Графики */
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
 }
 
 .chart-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-    border: 1px solid #f1f5f9;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
 }
 
 .chart-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
 .chart-card h4 {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: #1e293b;
     text-align: center;
     font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .chart-card canvas {
-    max-height: 300px;
+    max-height: 320px;
     width: 100% !important;
 }
 
@@ -455,14 +699,16 @@ body {
 .tables-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .table-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .table-card.full-width {
@@ -473,36 +719,91 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .table-header h4 {
     color: #1e293b;
+    font-weight: 700;
 }
 
 .table-container {
     overflow-x: auto;
+    border-radius: 12px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 th, td {
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.25rem;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
 }
 
 th {
-    background: #f8fafc;
-    font-weight: 600;
+    background: rgba(248, 250, 252, 0.8);
+    font-weight: 700;
     color: #374151;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 tr:hover {
-    background: #f8fafc;
+    background: rgba(99, 102, 241, 0.05);
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-content h3 {
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.modal-content p {
+    margin-bottom: 2rem;
+    color: #64748b;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
 }
 
 /* Уведомления */
@@ -510,28 +811,30 @@ tr:hover {
     position: fixed;
     top: 20px;
     right: 20px;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
+    padding: 1.25rem 1.75rem;
+    border-radius: 16px;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .notification.success {
-    background: #10b981;
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .notification.error {
-    background: #ef4444;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 .notification.info {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
-@keyframes slideIn {
+@keyframes slideInRight {
     from {
         transform: translateX(100%);
         opacity: 0;
@@ -542,7 +845,7 @@ tr:hover {
     }
 }
 
-@keyframes slideOut {
+@keyframes slideOutRight {
     from {
         transform: translateX(0);
         opacity: 1;
@@ -554,6 +857,12 @@ tr:hover {
 }
 
 /* Адаптивность */
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .navbar {
         padding: 1rem;
@@ -598,7 +907,25 @@ tr:hover {
     }
     
     .chart-card {
-        padding: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .manage-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .manage-controls {
+        flex-direction: column;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -623,8 +950,12 @@ tr:hover {
     }
     
     .tab-btn {
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1rem;
         font-size: 0.875rem;
+    }
+    
+    .auth-card {
+        padding: 2rem;
     }
 }
 
@@ -636,7 +967,7 @@ tr:hover {
 
 .chart-container {
     position: relative;
-    height: 300px;
+    height: 320px;
 }
 
 .no-data {
@@ -644,12 +975,61 @@ tr:hover {
     color: #64748b;
     font-style: italic;
     padding: 3rem;
-    background: #f8fafc;
-    border-radius: 8px;
+    background: rgba(248, 250, 252, 0.5);
+    border-radius: 12px;
     border: 2px dashed #e2e8f0;
 }
 
-/* Анимации для лучшего пользовательского опыта */
+/* Стили для управления товарами */
+.product-management-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.product-management-item:hover {
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.product-management-item:last-child {
+    border-bottom: none;
+}
+
+.product-mgmt-info {
+    flex: 1;
+}
+
+.product-mgmt-name {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+}
+
+.product-mgmt-details {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.product-mgmt-price {
+    font-weight: 700;
+    color: #6366f1;
+    margin-right: 2rem;
+}
+
+.product-mgmt-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+/* Анимации */
 .fade-in {
     animation: fadeIn 0.5s ease-in;
 }
@@ -684,4 +1064,32 @@ tr:hover {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Стили для рейтинга */
+.rating-stars {
+    color: #fbbf24;
+    font-size: 1.1rem;
+}
+
+/* Стили для пустых состояний */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.empty-state p {
+    margin-bottom: 2rem;
 }
