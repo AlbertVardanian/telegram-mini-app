@@ -158,9 +158,6 @@
                                     <option value="yandex">Яндекс Маркет</option>
                                     <option value="aliexpress">AliExpress</option>
                                     <option value="amazon">Amazon</option>
-                                    <option value="sbermegamarket">СберМегаМаркет</option>
-                                    <option value="citilink">Citilink</option>
-                                    <option value="dns">DNS</option>
                                 </select>
                             </div>
 
@@ -176,9 +173,6 @@
                                     <option value="beauty">Красота</option>
                                     <option value="toys">Игрушки</option>
                                     <option value="food">Продукты питания</option>
-                                    <option value="auto">Автотовары</option>
-                                    <option value="health">Здоровье</option>
-                                    <option value="other">Другое</option>
                                 </select>
                             </div>
 
@@ -192,18 +186,6 @@
                                 <input type="number" id="price" step="0.01" min="0" required placeholder="0.00">
                             </div>
 
-                            <div class="form-group">
-                                <label for="purchaseDate">Дата покупки</label>
-                                <input type="date" id="purchaseDate">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="notes">Примечания</label>
-                                <textarea id="notes" placeholder="Дополнительная информация о товаре" rows="3"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
                             <button type="submit" class="btn btn-primary btn-large">Сохранить товар</button>
                         </div>
                     </form>
@@ -224,41 +206,6 @@
             </nav>
 
             <main class="main-content">
-                <!-- Общая статистика -->
-                <section class="analytics-section">
-                    <h3>Общая статистика</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card-large">
-                            <div class="stat-icon">📦</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="analyticsTotalProducts">0</div>
-                                <div class="stat-label">Всего товаров</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">💰</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="analyticsTotalValue">0₽</div>
-                                <div class="stat-label">Общая стоимость</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">📊</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="analyticsAvgPrice">0₽</div>
-                                <div class="stat-label">Средняя цена</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">🏪</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="analyticsMarketplaces">0</div>
-                                <div class="stat-label">Маркетплейсов</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <!-- Графики -->
                 <section class="analytics-section">
                     <h3>Визуальная аналитика</h3>
@@ -281,26 +228,6 @@
                         <div class="chart-card">
                             <h4>Покупки по месяцам</h4>
                             <canvas id="monthlyChart"></canvas>
-                        </div>
-                        
-                        <div class="chart-card">
-                            <h4>Топ товаров по цене</h4>
-                            <canvas id="topProductsChart"></canvas>
-                        </div>
-                        
-                        <div class="chart-card">
-                            <h4>Стоимость по категориям</h4>
-                            <canvas id="categoryValueChart"></canvas>
-                        </div>
-                        
-                        <div class="chart-card">
-                            <h4>Динамика покупок</h4>
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                        
-                        <div class="chart-card">
-                            <h4>Сравнение маркетплейсов</h4>
-                            <canvas id="comparisonChart"></canvas>
                         </div>
                     </div>
                 </section>
@@ -369,7 +296,6 @@
                                             <th>Категория</th>
                                             <th>Товар</th>
                                             <th>Цена</th>
-                                            <th>Примечания</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
