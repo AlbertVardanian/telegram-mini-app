@@ -193,38 +193,222 @@
                     </div>
                 </section>
 
-                <!-- Графики -->
+                <!-- Визуальная аналитика с табами -->
                 <section class="analytics-section">
                     <h3>📊 Визуальная аналитика</h3>
-                    <div class="charts-grid">
-                        <div class="chart-card">
-                            <h4>🛒 Распределение по маркетплейсам</h4>
-                            <canvas id="marketplaceChart"></canvas>
+                    
+                    <!-- Табы для переключения аналитики -->
+                    <div class="analytics-tabs">
+                        <button class="tab-btn active" data-tab="overview">📈 Обзор</button>
+                        <button class="tab-btn" data-tab="marketplaces">🏪 Маркетплейсы</button>
+                        <button class="tab-btn" data-tab="categories">📂 Категории</button>
+                        <button class="tab-btn" data-tab="prices">💰 Цены</button>
+                        <button class="tab-btn" data-tab="timeline">📅 Время</button>
+                        <button class="tab-btn" data-tab="comparison">⚖️ Сравнение</button>
+                    </div>
+
+                    <!-- Контент табов -->
+                    <div class="tab-content active" id="overviewTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>🛒 Распределение по маркетплейсам</h4>
+                                <canvas id="marketplaceChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📂 Распределение по категориям</h4>
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💵 Средняя цена по маркетплейсам</h4>
+                                <canvas id="avgPriceChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📅 Покупки по месяцам</h4>
+                                <canvas id="monthlyChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🏆 Топ товаров по цене</h4>
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💎 Стоимость по категориям</h4>
+                                <canvas id="categoryValueChart"></canvas>
+                            </div>
                         </div>
-                        
-                        <div class="chart-card">
-                            <h4>📂 Распределение по категориям</h4>
-                            <canvas id="categoryChart"></canvas>
+                    </div>
+
+                    <div class="tab-content" id="marketplacesTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>📊 Доля маркетплейсов</h4>
+                                <canvas id="marketplaceShareChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💰 Стоимость по маркетплейсам</h4>
+                                <canvas id="marketplaceValueChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📈 Динамика по маркетплейсам</h4>
+                                <canvas id="marketplaceTrendChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>⚡ Эффективность маркетплейсов</h4>
+                                <canvas id="marketplaceEfficiencyChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🎯 Средний чек по маркетплейсам</h4>
+                                <canvas id="marketplaceAvgChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📦 Товары по маркетплейсам</h4>
+                                <canvas id="marketplaceProductsChart"></canvas>
+                            </div>
                         </div>
-                        
-                        <div class="chart-card">
-                            <h4>💵 Средняя цена по маркетплейсам</h4>
-                            <canvas id="avgPriceChart"></canvas>
+                    </div>
+
+                    <div class="tab-content" id="categoriesTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>📊 Доля категорий</h4>
+                                <canvas id="categoryShareChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💰 Стоимость по категориям</h4>
+                                <canvas id="categorySpendingChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📈 Динамика по категориям</h4>
+                                <canvas id="categoryTrendChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🎯 Распределение цен по категориям</h4>
+                                <canvas id="categoryPriceDistributionChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📊 Популярность категорий</h4>
+                                <canvas id="categoryPopularityChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💎 Инвестиции в категории</h4>
+                                <canvas id="categoryInvestmentChart"></canvas>
+                            </div>
                         </div>
-                        
-                        <div class="chart-card">
-                            <h4>📅 Покупки по месяцам</h4>
-                            <canvas id="monthlyChart"></canvas>
+                    </div>
+
+                    <div class="tab-content" id="pricesTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>📊 Распределение цен</h4>
+                                <canvas id="priceDistributionChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💰 Ценовые сегменты</h4>
+                                <canvas id="priceSegmentsChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📈 Динамика средней цены</h4>
+                                <canvas id="priceTrendChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>⚖️ Сравнение цен</h4>
+                                <canvas id="priceComparisonChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🎯 Ценовые корзины</h4>
+                                <canvas id="priceBasketChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📊 Статистика цен</h4>
+                                <canvas id="priceStatsChart"></canvas>
+                            </div>
                         </div>
-                        
-                        <div class="chart-card">
-                            <h4>🏆 Топ товаров по цене</h4>
-                            <canvas id="topProductsChart"></canvas>
+                    </div>
+
+                    <div class="tab-content" id="timelineTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>📅 Покупки по дням</h4>
+                                <canvas id="dailyChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📊 Покупки по неделям</h4>
+                                <canvas id="weeklyChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📈 Тренд покупок</h4>
+                                <canvas id="purchaseTrendChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>💰 Стоимость по времени</h4>
+                                <canvas id="spendingTimelineChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📆 Месячная активность</h4>
+                                <canvas id="monthlyActivityChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🎯 Сезонность покупок</h4>
+                                <canvas id="seasonalityChart"></canvas>
+                            </div>
                         </div>
-                        
-                        <div class="chart-card">
-                            <h4>💎 Стоимость по категориям</h4>
-                            <canvas id="categoryValueChart"></canvas>
+                    </div>
+
+                    <div class="tab-content" id="comparisonTab">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h4>⚖️ Сравнение маркетплейсов</h4>
+                                <canvas id="marketplaceComparisonChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📊 Сравнение категорий</h4>
+                                <canvas id="categoryComparisonChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📈 Радарная диаграмма</h4>
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>🎯 Пузырьковая диаграмма</h4>
+                                <canvas id="bubbleChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>📊 Корреляция цена-категория</h4>
+                                <canvas id="correlationChart"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h4>⚡ Производительность</h4>
+                                <canvas id="performanceChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </section>
