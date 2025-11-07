@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Product Tracker</title>
+    <title>Product Analytics</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -12,186 +12,274 @@
     <div id="app">
         <!-- Страница входа -->
         <div id="loginPage" class="page active">
-            <div class="login-container">
-                <h2>Вход в систему</h2>
-                <form id="loginForm">
-                    <input type="text" id="username" placeholder="Имя пользователя" required>
-                    <input type="password" id="password" placeholder="Пароль" required>
-                    <button type="submit">Войти</button>
-                </form>
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1>Product Analytics</h1>
+                    <p class="auth-subtitle">Войдите в систему для управления товарами</p>
+                    <form id="loginForm" class="auth-form">
+                        <div class="input-group">
+                            <input type="text" id="username" placeholder=" " required>
+                            <label for="username">Имя пользователя</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="password" placeholder=" " required>
+                            <label for="password">Пароль</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Войти</button>
+                    </form>
+                    <div class="auth-demo">
+                        <p>Для демо-входа используйте любые данные</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Главная страница -->
         <div id="mainPage" class="page">
-            <header>
-                <h1>Учет товаров</h1>
-                <button id="logoutBtn" class="btn-secondary">Выйти</button>
-            </header>
-            
-            <div class="main-actions">
-                <button id="addProductBtn" class="btn-primary">ДОБАВИТЬ ТОВАР</button>
-                <button id="analyticsBtn" class="btn-primary">АНАЛИТИКА ТОВАРОВ</button>
-            </div>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <h2>Product Analytics</h2>
+                </div>
+                <div class="nav-actions">
+                    <span class="user-welcome">Добро пожаловать!</span>
+                    <button id="logoutBtn" class="btn btn-secondary">Выйти</button>
+                </div>
+            </nav>
+
+            <main class="main-content">
+                <div class="hero-section">
+                    <h1>Управление товарами</h1>
+                    <p>Добавляйте товары и анализируйте статистику покупок</p>
+                </div>
+
+                <div class="action-grid">
+                    <div class="action-card" id="addProductBtn">
+                        <div class="action-icon">➕</div>
+                        <h3>Добавить товар</h3>
+                        <p>Добавьте новый товар в вашу базу</p>
+                    </div>
+                    
+                    <div class="action-card" id="analyticsBtn">
+                        <div class="action-icon">📊</div>
+                        <h3>Аналитика товаров</h3>
+                        <p>Подробная статистика и графики</p>
+                    </div>
+                </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalProducts">0</div>
+                        <div class="stat-label">Всего товаров</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalValue">0₽</div>
+                        <div class="stat-label">Общая стоимость</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgPrice">0₽</div>
+                        <div class="stat-label">Средняя цена</div>
+                    </div>
+                </div>
+            </main>
         </div>
 
         <!-- Страница добавления товара -->
         <div id="addProductPage" class="page">
-            <header>
-                <h2>Добавить товар</h2>
-                <button id="backFromAddBtn" class="btn-secondary">← Назад</button>
-            </header>
-            
-            <form id="productForm">
-                <div class="form-group">
-                    <label for="marketplace">Маркетплейс:</label>
-                    <select id="marketplace" required>
-                        <option value="">Выберите маркетплейс</option>
-                        <option value="wildberries">Wildberries</option>
-                        <option value="ozon">Ozon</option>
-                        <option value="yandex">Яндекс Маркет</option>
-                        <option value="aliexpress">AliExpress</option>
-                        <option value="amazon">Amazon</option>
-                    </select>
+            <nav class="navbar">
+                <button id="backFromAddBtn" class="btn btn-back">← Назад</button>
+                <div class="nav-brand">
+                    <h2>Добавить товар</h2>
                 </div>
+                <div class="nav-actions"></div>
+            </nav>
 
-                <div class="form-group">
-                    <label for="category">Категория:</label>
-                    <select id="category" required>
-                        <option value="">Выберите категорию</option>
-                        <option value="electronics">Электроника</option>
-                        <option value="clothing">Одежда</option>
-                        <option value="books">Книги</option>
-                        <option value="home">Дом и сад</option>
-                        <option value="sports">Спорт</option>
-                        <option value="beauty">Красота</option>
-                        <option value="toys">Игрушки</option>
-                        <option value="food">Продукты питания</option>
-                    </select>
+            <main class="main-content">
+                <div class="form-container">
+                    <form id="productForm" class="product-form">
+                        <div class="form-section">
+                            <h3>Основная информация</h3>
+                            
+                            <div class="form-group">
+                                <label for="marketplace">Маркетплейс *</label>
+                                <select id="marketplace" required>
+                                    <option value="">Выберите маркетплейс</option>
+                                    <option value="wildberries">Wildberries</option>
+                                    <option value="ozon">Ozon</option>
+                                    <option value="yandex">Яндекс Маркет</option>
+                                    <option value="aliexpress">AliExpress</option>
+                                    <option value="amazon">Amazon</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category">Категория *</label>
+                                <select id="category" required>
+                                    <option value="">Выберите категорию</option>
+                                    <option value="electronics">Электроника</option>
+                                    <option value="clothing">Одежда</option>
+                                    <option value="books">Книги</option>
+                                    <option value="home">Дом и сад</option>
+                                    <option value="sports">Спорт</option>
+                                    <option value="beauty">Красота</option>
+                                    <option value="toys">Игрушки</option>
+                                    <option value="food">Продукты питания</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productName">Название товара *</label>
+                                <input type="text" id="productName" required placeholder="Введите название товара">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="price">Цена (₽) *</label>
+                                <input type="number" id="price" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">Сохранить товар</button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="form-group">
-                    <label for="productName">Название товара:</label>
-                    <input type="text" id="productName" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="price">Цена (₽):</label>
-                    <input type="number" id="price" step="0.01" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Сохранить товар</button>
-            </form>
+            </main>
         </div>
 
         <!-- Страница аналитики -->
         <div id="analyticsPage" class="page">
-            <header>
-                <h2>Аналитика товаров</h2>
-                <button id="backFromAnalyticsBtn" class="btn-secondary">← Назад</button>
-            </header>
+            <nav class="navbar">
+                <button id="backFromAnalyticsBtn" class="btn btn-back">← Назад</button>
+                <div class="nav-brand">
+                    <h2>Аналитика товаров</h2>
+                </div>
+                <div class="nav-actions">
+                    <button id="exportAllBtn" class="btn btn-primary">Экспорт в Excel</button>
+                </div>
+            </nav>
 
-            <div class="analytics-controls">
-                <button id="exportAllBtn" class="btn-primary">Экспорт всех данных в Excel</button>
-            </div>
+            <main class="main-content">
+                <!-- Графики -->
+                <section class="analytics-section">
+                    <h3>Визуальная аналитика</h3>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h4>Распределение по маркетплейсам</h4>
+                            <canvas id="marketplaceChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Распределение по категориям</h4>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Средняя цена по маркетплейсам</h4>
+                            <canvas id="avgPriceChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Покупки по месяцам</h4>
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Топ товаров по цене</h4>
+                            <canvas id="topProductsChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Стоимость по категориям</h4>
+                            <canvas id="categoryValueChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Динамика покупок</h4>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h4>Сравнение маркетплейсов</h4>
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Графики -->
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3>Распределение по маркетплейсам</h3>
-                    <canvas id="marketplaceChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Распределение по категориям</h3>
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Средняя цена по маркетплейсам</h3>
-                    <canvas id="avgPriceChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Количество товаров по месяцам</h3>
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Топ товаров по цене</h3>
-                    <canvas id="topProductsChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Стоимость по категориям</h3>
-                    <canvas id="categoryValueChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Динамика покупок</h3>
-                    <canvas id="trendChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>Сравнение маркетплейсов</h3>
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-            </div>
+                <!-- Таблицы -->
+                <section class="analytics-section">
+                    <h3>Табличные данные</h3>
+                    <div class="tables-grid">
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h4>Сводка по маркетплейсам</h4>
+                                <button class="btn btn-export export-btn" data-table="marketplaceTable">
+                                    📊 Excel
+                                </button>
+                            </div>
+                            <div class="table-container">
+                                <table id="marketplaceTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Маркетплейс</th>
+                                            <th>Кол-во</th>
+                                            <th>Общая сумма</th>
+                                            <th>Средняя цена</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
 
-            <!-- Таблицы -->
-            <div class="tables-section">
-                <div class="table-container">
-                    <h3>Сводная таблица по маркетплейсам</h3>
-                    <table id="marketplaceTable">
-                        <thead>
-                            <tr>
-                                <th>Маркетплейс</th>
-                                <th>Кол-во товаров</th>
-                                <th>Общая стоимость</th>
-                                <th>Средняя цена</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <button class="export-btn" data-table="marketplaceTable">Экспорт в Excel</button>
-                </div>
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h4>Сводка по категориям</h4>
+                                <button class="btn btn-export export-btn" data-table="categoryTable">
+                                    📊 Excel
+                                </button>
+                            </div>
+                            <div class="table-container">
+                                <table id="categoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Категория</th>
+                                            <th>Кол-во</th>
+                                            <th>Общая сумма</th>
+                                            <th>Средняя цена</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                <div class="table-container">
-                    <h3>Сводная таблица по категориям</h3>
-                    <table id="categoryTable">
-                        <thead>
-                            <tr>
-                                <th>Категория</th>
-                                <th>Кол-во товаров</th>
-                                <th>Общая стоимость</th>
-                                <th>Средняя цена</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <button class="export-btn" data-table="categoryTable">Экспорт в Excel</button>
-                </div>
-
-                <div class="table-container">
-                    <h3>Детализация товаров</h3>
-                    <table id="productsTable">
-                        <thead>
-                            <tr>
-                                <th>Дата</th>
-                                <th>Маркетплейс</th>
-                                <th>Категория</th>
-                                <th>Товар</th>
-                                <th>Цена</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <button class="export-btn" data-table="productsTable">Экспорт в Excel</button>
-                </div>
-            </div>
+                        <div class="table-card full-width">
+                            <div class="table-header">
+                                <h4>Все товары</h4>
+                                <button class="btn btn-export export-btn" data-table="productsTable">
+                                    📊 Excel
+                                </button>
+                            </div>
+                            <div class="table-container">
+                                <table id="productsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Маркетплейс</th>
+                                            <th>Категория</th>
+                                            <th>Товар</th>
+                                            <th>Цена</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
