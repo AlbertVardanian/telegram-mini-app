@@ -83,6 +83,7 @@ body {
 
 .btn:hover {
     transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .btn-primary {
@@ -92,12 +93,15 @@ body {
 
 .btn-primary:hover {
     background: var(--primary-dark);
-    box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
     background: var(--secondary);
     color: white;
+}
+
+.btn-secondary:hover {
+    background: #525252;
 }
 
 .btn-back {
@@ -142,9 +146,7 @@ body {
 .hero-section h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary);
 }
 
 .hero-section p {
@@ -219,52 +221,6 @@ body {
     font-size: 0.875rem;
 }
 
-/* Большие карточки статистики для аналитики */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card-large {
-    background: var(--surface);
-    padding: 1.5rem;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.stat-card-large .stat-icon {
-    font-size: 2rem;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary);
-    color: white;
-    border-radius: var(--radius);
-}
-
-.stat-card-large .stat-content {
-    flex: 1;
-}
-
-.stat-card-large .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.25rem;
-}
-
-.stat-card-large .stat-label {
-    color: var(--text-light);
-    font-size: 0.875rem;
-}
-
 /* Последние товары */
 .recent-products {
     background: var(--surface);
@@ -285,7 +241,7 @@ body {
 
 .product-item {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     padding: 1rem;
     background: var(--background);
@@ -435,13 +391,9 @@ body {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
 .form-actions {
     text-align: center;
+    margin-top: 2rem;
 }
 
 /* Аналитика */
@@ -586,26 +538,20 @@ tr:hover {
     box-shadow: var(--shadow-lg);
     z-index: 1000;
     animation: slideIn 0.3s ease-out;
+    color: white;
+    font-weight: 500;
 }
 
 .notification.success {
     background: var(--success);
-    color: white;
 }
 
 .notification.error {
     background: var(--danger);
-    color: white;
 }
 
 .notification.info {
     background: var(--info);
-    color: white;
-}
-
-.notification.warning {
-    background: var(--warning);
-    color: white;
 }
 
 @keyframes slideIn {
@@ -636,6 +582,7 @@ tr:hover {
         padding: 1rem;
         flex-direction: column;
         gap: 1rem;
+        text-align: center;
     }
     
     .main-content {
@@ -650,8 +597,7 @@ tr:hover {
         grid-template-columns: 1fr;
     }
     
-    .quick-stats,
-    .stats-grid {
+    .quick-stats {
         grid-template-columns: repeat(2, 1fr);
     }
     
@@ -671,8 +617,7 @@ tr:hover {
 }
 
 @media (max-width: 480px) {
-    .quick-stats,
-    .stats-grid {
+    .quick-stats {
         grid-template-columns: 1fr;
     }
     
